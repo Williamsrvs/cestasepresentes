@@ -223,3 +223,54 @@ CREATE TABLE IF NOT EXISTS tbl_entregadores(
     ativo TINYINT DEFAULT 1,
     criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE u799109175_menu_prod.tbl_pedidos_financeiro AS
+SELECT
+    dp.id_pedido,
+    dp.id_prod,
+    dp.nome_prod AS nome_produto,
+
+    dp.nome_cliente,
+    dp.telefone,
+    dp.dt_registro,
+    dp.endereco,
+    dp.bairro,
+
+    dp.status_pedido,
+
+    dp.form_pgmto,
+    dp.tipo_consumo,
+
+    SUM(dp.quantidade) AS qtde,
+    SUM(dp.valor_total) AS valor_total
+
+FROM u799109175_menu_prod.tbl_detalhes_pedido dp
+
+JOIN u799109175_menu_prod.tbl_prod p
+    ON dp.id_prod = p.id_prod
+
+JOIN u799109175_menu_prod.tbl_pedidos pe
+    ON dp.id_pedido = pe.id_pedido
+
+GROUP BY
+    dp.id_pedido,
+    dp.id_prod,
+    dp.nome_prod,
+    dp.nome_cliente,
+    dp.telefone,
+    dp.dt_registro,
+    dp.endereco,
+    dp.bairro,
+    dp.status_pedido,
+    dp.form_pgmto,
+    dp.tipo_consumo
+
+ORDER BY dp.dt_registro DESC;
+
+CREATE TABLE IF NOT EXISTS u799109175_menu_prod.tbl_acomp_pedidos AS
+SELECT
+    pe.status_pedido,
+    COUNT(*) AS qtde_pedidos,
+    SUM(pe.valor_total) AS total_pedidos
+FROM u799109175_menu_prod.tbl_pedidos_financeiro pe
+GROUP BY pe.status_pedido;

@@ -1070,7 +1070,7 @@ def ger_pedidos():
             data_fim = request.args.get('data_fim')
 
             query = """SELECT * FROM vw_pedidos_fin
-                    where date(dt_registro) >= curdate()
+                    where date(dt_registro) <= curdate()
                     
             """  
             params = []
@@ -1079,10 +1079,11 @@ def ger_pedidos():
                 query += " WHERE DATE(dt_registro) BETWEEN %s AND %s"
                 params = [data_inicio, data_fim]
             elif data_inicio:
+                
                 query += " WHERE DATE(dt_registro) >= %s"
                 params = [data_inicio]
             elif data_fim:
-                query += " WHERE DATE(dt_registro) <= %s"
+                query += " WHERE DATE(dt_registro) <= %s" 
                 params = [data_fim]
 
             query += " ORDER BY dt_registro DESC"
@@ -1120,7 +1121,8 @@ def ger_pedidos():
                 
             )
 
-    return render_template('ger_pedidos.html', pedidos=[], total_valor=0, qtde_total=0, qtde_itens=0)
+    return render_template('ger_pedidos.html', 
+    pedidos=[], total_valor=0, qtde_total=0, qtde_itens=0)
 
 
 @app.route('/pedidos_excel', methods=['GET'])
