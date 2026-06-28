@@ -1066,8 +1066,14 @@ def ger_pedidos():
             conn = mysql.get_connection()
             cur = conn.cursor(dictionary=True)
 
-            data_inicio = request.args.get('data_inicio')
-            data_fim = request.args.get('data_fim')
+            data_inicio = request.args.get('data_inicio').strftime('%d/%m/%Y') if request.args.get('data_inicio') else None
+            data_fim = request.args.get('data_fim').strftime('%d/%m/%Y') if request.args.get('data_fim') else None
+
+            if data_inicio:
+                data_inicio = datetime.strptime(data_inicio,'%Y-%m-%d').strftime('%d/%m/%Y')
+            if data_fim:
+                data_fim = datetime.strptime(data_fim, '%Y-%m-%d').strftime('%d/%m/%Y')
+
 
             query = """SELECT * FROM vw_pedidos_fin
                     where date(dt_registro) <= curdate()
@@ -1501,6 +1507,12 @@ def atualizar_status_pedido():
     except Exception as e:
         logging.error(f"❌ Erro ao atualizar status: {e}")
         return jsonify({'sucesso': False, 'erro': str(e)}), 500
+
+@app.route('/dashboard',methods=['GET'])
+def dashboard():
+# Renderiza a página do dashboard
+    return render_template('dashboard.html')
+
 
 
 # Permite acesso por IP local da rede

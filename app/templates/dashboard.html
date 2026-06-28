@@ -375,6 +375,17 @@
 
         .watermark img { width: 180px; }
 
+
+        .dashboard-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+        }
+
+
+
+
         /* ── Responsive ── */
         @media (max-width: 768px) {
             .sidebar { transform: translateX(-100%); }
@@ -389,6 +400,12 @@
         @media (max-width: 400px) {
             .cards-grid { grid-template-columns: 1fr; }
         }
+
+
+
+
+
+
     </style>
 </head>
 <body>
@@ -404,7 +421,7 @@
 
     <div class="sidebar-brand">
         <img src="https://raw.githubusercontent.com/Williamsrvs/img_catalogodigital/refs/heads/main/logo%20pedido%20certo.png" alt="Pedido Certo">
-        <span class="sidebar-badge">Painel do Lojista</span>
+        <span class="sidebar-badge">Dashboard do Lojista</span>
     </div>
 
     <div class="sidebar-nav">
@@ -500,106 +517,16 @@
 <main class="main">
 
     <header class="page-header">
-        <h1>Central do <span>Lojista</span></h1>
-        <p>Bem-vindo! Gerencie seus produtos, acompanhe pedidos e acesse relatórios do seu negócio em um só lugar.</p>
+        <h1>Dasboard do <span>Lojista</span></h1>
+        <p>Bem-vindo! Acompanh em tempo real o desempenho do seu negócio.</p>
     </header>
 
-    <!-- Acesso rápido -->
-    <section>
-        <p class="section-title">Acesso Rápido</p>
-        <div class="cards-grid">
-
-            <a href="/ger_clientes" class="action-card">
-                <div class="card-icon-wrap">👤</div>
-                <span class="card-label">Clientes</span>
-                <span class="card-desc">Gerencie sua base de clientes</span>
-            </a>
-
-            <a href="/produto" class="action-card">
-                <div class="card-icon-wrap">➕</div>
-                <span class="card-label">Adicionar Produto</span>
-                <span class="card-desc">Cadastre novos itens no cardápio</span>
-            </a>
-
-            <a href="/ger_pedidos" class="action-card">
-                <div class="card-icon-wrap">📦</div>
-                <span class="card-label">Gerenciar Pedidos</span>
-                <span class="card-desc">Visualize e processe pedidos</span>
-            </a>
-
-            <a href="/pedidos" class="action-card">
-                <div class="card-icon-wrap">🛒</div>
-                <span class="card-label">PDV</span>
-                <span class="card-desc">Registre pedidos no balcão</span>
-            </a>
-
-            <a href="/cadastrar_usuario" class="action-card">
-                <div class="card-icon-wrap">🔑</div>
-                <span class="card-label">Usuários</span>
-                <span class="card-desc">Gerencie acessos ao sistema</span>
-            </a>
-
-            <a href="entregadores" class="action-card">
-                <div class="card-icon-wrap">🛵</div>
-                <span class="card-label">Entregadores</span>
-                <span class="card-desc">Cadastre e gerencie entregadores</span>
-            </a>
-
+    <div class="powerbi-dashboard">
+        <div class="dashboard-container">
+            <iframe width="100%" height="1000" src="https://app.powerbi.com/view?r=eyJrIjoiYmYyOTMzMzktNTUxMC00YWYwLWJhYTktMDM5ZjY4ZTY1Zjg2IiwidCI6IjMyMzQxYTA2LWI2OTAtNDgzNC05NGEzLWQwYjJmN2JkYTdlMCJ9" frameborder="0" allowFullScreen="true"></iframe>
         </div>
-    </section>
+    </div>
 
-    <!-- Relatórios -->
-    <section>
-        <p class="section-title">Relatórios</p>
-        <div class="reports-grid">
-
-            <a href="/produto_excel" class="report-card">
-                <div class="report-icon">📊</div>
-                <div class="report-info">
-                    <span class="report-label">Relatório de Produtos</span>
-                    <span class="report-sub">Exportar lista completa</span>
-                </div>
-            </a>
-
-            <a href="/cliente_excel" class="report-card">
-                <div class="report-icon">📊</div>
-                <div class="report-info">
-                    <span class="report-label">Relatório de Clientes</span>
-                    <span class="report-sub">Exportar cadastros</span>
-                </div>
-            </a>
-
-            <a href="/ger_pedidos" class="report-card">
-                <div class="report-icon">📊</div>
-                <div class="report-info">
-                    <span class="report-label">Relatório de Pedidos</span>
-                    <span class="report-sub">Histórico de pedidos</span>
-                </div>
-            </a>
-
-            <a href="/pedidos_excel_clientes" class="report-card">
-                <div class="report-icon">📊</div>
-                <div class="report-info">
-                    <span class="report-label">Pedidos por Cliente</span>
-                    <span class="report-sub">Análise por cliente</span>
-                </div>
-            </a>
-
-        </div>
-    </section>
-
-    <section>
-        <p class="section-title">Dashboard </p>
-        <div class="cards-grid">
-
-            <a href="/dashboard" class="action-card">
-                <div class="card-icon-wrap">📉</div>
-                <span class="card-label">Dashboard</span>
-                <span class="card-desc">Visão geral das operações</span>
-            </a>
-
-        </div>
-    </section>
 
     <!-- Watermark logo -->
     <div class="watermark">
