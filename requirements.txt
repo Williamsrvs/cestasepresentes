@@ -24,3 +24,7 @@ gunicorn==21.2.0
 # Web Scraping
 selenium==4.15.2
 webdriver-manager==4.0.1
+
+# PIX QR Code Generation (Brcode - Banco Central)
+qrcode==8.2
+brcode==1.2

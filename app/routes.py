@@ -914,10 +914,14 @@ def salvar_pedido():
         carrinho = dados.get('carrinho', [])
         id_cliente = dados.get('id_cliente')
         nome_cliente = dados.get('nome_cliente')
-        telefone_cliente = dados.get('telefone_cliente')
-        numero_mesa = dados.get('numero_mesa')
+        # O frontend envia como email_cliente e telefone_cliente, mas o BD usa email e telefone
+        email = dados.get('email_cliente', dados.get('email', ''))
+        telefone = dados.get('telefone_cliente', dados.get('telefone', ''))
+        numero_mesa = dados.get('numero_mesa') or 0  # Se vazio/null, usar 0
         endereco = dados.get('endereco', '')
         bairro = dados.get('bairro', '')
+        cidade = dados.get('cidade', '')
+        uf = dados.get('uf', '')
         ponto_referencia = dados.get('ponto_referencia', '')
         form_pgmto = dados.get('form_pgmto', '')
         tipo_consumo = dados.get('tipo_consumo', '')
@@ -936,8 +940,8 @@ def salvar_pedido():
                 # Tentar correspondência por telefone primeiro quando disponível
                 encontrado = None
                 try:
-                    if telefone_cliente and telefone_cliente.strip() != '':
-                        cur.execute("SELECT id_cliente FROM tbl_cliente WHERE telefone = %s LIMIT 1", (telefone_cliente,))
+                    if telefone and telefone.strip() != '':
+                        cur.execute("SELECT id_cliente FROM tbl_cliente WHERE telefone = %s LIMIT 1", (telefone,))
                         encontrado = cur.fetchone()
                     # Se não encontrou por telefone, tentar por nome
                     if not encontrado:
@@ -947,10 +951,21 @@ def salvar_pedido():
                     if encontrado and encontrado.get('id_cliente'):
                         id_cliente = encontrado.get('id_cliente')
                     else:
-                        # Inserir novo cliente
-                        cur.execute("INSERT INTO tbl_cliente (nome_cliente, telefone) VALUES (%s, %s)", (nome_cliente, telefone_cliente))
+                        # Inserir novo cliente com TODOS os dados fornecidos
+                        cur.execute(
+                            "INSERT INTO tbl_cliente (nome_cliente,email,endereco,bairro,cidade,uf,telefone) VALUES (%s, %s, %s, %s, %s, %s, %s)",
+                            (
+                                nome_cliente,
+                                email,      # Email do formulário
+                                endereco or '',
+                                bairro or '',
+                                cidade or '',       # Cidade do formulário
+                                uf or '',           # UF do formulário
+                                telefone
+                            )
+                        )
                         id_cliente = cur.lastrowid
-                        logging.info(f"✅ Cliente criado automaticamente: {id_cliente} - {nome_cliente}")
+                        logging.info(f"✅ Cliente criado: {id_cliente} - {nome_cliente} | Email: {email} | Cidade: {cidade}, {uf}")
                 except Exception as e:
                     logging.error(f"❌ Erro ao localizar/criar cliente: {e}")
                     conn.rollback()
@@ -983,7 +998,7 @@ def salvar_pedido():
                 INSERT INTO tbl_detalhes_pedido 
                 (id_pedido, id_prod, id_cliente, quantidade, preco_unitario, nome_cliente, telefone, valor_total, numero_mesa, endereco, bairro, ponto_referencia, form_pgmto, tipo_consumo, observacao,taxa_entrega)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-            """, (id_pedido, id_prod, id_cliente, quantidade, preco_unitario, nome_cliente, telefone_cliente, valor_item, numero_mesa, endereco, bairro, ponto_referencia, form_pgmto, tipo_consumo, observacao,taxa_entrega))
+            """, (id_pedido, id_prod, id_cliente, quantidade, preco_unitario, nome_cliente, telefone, valor_item, numero_mesa, endereco, bairro, ponto_referencia, form_pgmto, tipo_consumo, observacao,taxa_entrega))
         
         conn.commit()
         logging.info(f"✅ Pedido salvo: {id_pedido} com {len(carrinho)} itens")
@@ -1026,36 +1041,128 @@ def enviar_whatsapp():
         mensagem = dados.get('mensagem')
         
         if not whatsapp_numero or not mensagem:
+            logging.warning(f"⚠️ Parâmetros incompletos: numero={whatsapp_numero}, msg_length={len(str(mensagem)) if mensagem else 0}")
             return jsonify({
                 "status": "erro",
                 "mensagem": "Número de WhatsApp ou mensagem não fornecidos"
             }), 400
         
         # Limpar número (remover caracteres especiais)
-        whatsapp_numero = ''.join(filter(str.isdigit, whatsapp_numero))
+        whatsapp_numero_limpo = ''.join(filter(str.isdigit, str(whatsapp_numero)))
+        
+        if not whatsapp_numero_limpo:
+            logging.warning(f"❌ Número WhatsApp inválido após limpeza: {whatsapp_numero}")
+            return jsonify({
+                "status": "erro",
+                "mensagem": "Número de WhatsApp inválido"
+            }), 400
         
         try:
             # Criar URL do WhatsApp com mensagem pré-formatada
-            url_whatsapp = f"https://wa.me/{whatsapp_numero}?text={quote(mensagem)}"
+            # quote() codifica a mensagem para ser segura em URL
+            url_whatsapp = f"https://wa.me/{whatsapp_numero_limpo}?text={quote(str(mensagem))}"
             
-            logging.info(f"📱 Link WhatsApp gerado: {url_whatsapp[:80]}...")
+            logging.info(f"📱 Link WhatsApp gerado com sucesso para {whatsapp_numero_limpo}")
             
             return jsonify({
                 "status": "sucesso",
-                "mensagem": f"Link WhatsApp gerado com sucesso!",
-                "numero_whatsapp": whatsapp_numero,
+                "mensagem": "Link WhatsApp gerado com sucesso!",
+                "numero_whatsapp": whatsapp_numero_limpo,
                 "url_whatsapp": url_whatsapp
             }), 200
         
         except Exception as e:
-            logging.error(f"❌ Erro ao processar WhatsApp: {e}")
-            raise
+            logging.error(f"❌ Erro ao gerar URL WhatsApp: {e}")
+            return jsonify({
+                "status": "erro",
+                "mensagem": f"Erro ao processar mensagem: {str(e)}"
+            }), 500
     
     except Exception as e:
-        logging.error(f"❌ Erro ao enviar WhatsApp: {e}")
+        logging.error(f"❌ Erro na rota enviar_whatsapp: {e}", exc_info=True)
         return jsonify({
             "status": "erro",
-            "mensagem": f"Erro ao processar pedido para WhatsApp: {str(e)}"
+            "mensagem": f"Erro ao processar requisição: {str(e)}"
+        }), 500
+
+
+@app.route('/gerar_brcode_pix', methods=['POST'])
+def gerar_brcode_pix():
+    """
+    Gera QR Code PIX válido (Brcode) do Banco Central do Brasil
+    
+    Recebe:
+    - chave_pix: CPF, email, telefone ou chave aleatória
+    - valor: Valor em reais (opcional)
+    - nome_beneficiario: Nome do beneficiário
+    
+    Retorna: QR Code em base64 para exibição na página
+    """
+    try:
+        from brcode import BRCode
+        import qrcode
+        import io
+        import base64
+        
+        dados = request.get_json()
+        chave_pix = dados.get('chave_pix', '')
+        valor = float(dados.get('valor', 0))
+        nome_beneficiario = dados.get('nome_beneficiario', 'LOJA')
+        
+        if not chave_pix:
+            return jsonify({
+                "status": "erro",
+                "mensagem": "Chave PIX não fornecida"
+            }), 400
+        
+        # Gerar Brcode PIX válido (texto cópia e cola)
+        pix_dict = {
+            'name': nome_beneficiario,
+            'city': 'Brasilia',  # Cidade padrão
+            'account': 'br.gov.bcb.brcode',
+            'key': chave_pix
+        }
+        
+        if valor > 0:
+            pix_dict['amount'] = valor
+        
+        # Usar biblioteca brcode para gerar string Brcode
+        brcode = BRCode(**pix_dict)
+        brcode_texto = str(brcode)
+        
+        # Gerar QR Code a partir do Brcode texto
+        qr = qrcode.QRCode(
+            version=1,
+            error_correction=qrcode.constants.ERROR_CORRECT_H,
+            box_size=10,
+            border=4,
+        )
+        qr.add_data(brcode_texto)
+        qr.make(fit=True)
+        
+        img = qr.make_image(fill_color="black", back_color="white")
+        
+        # Converter para base64
+        buffer = io.BytesIO()
+        img.save(buffer, format='PNG')
+        buffer.seek(0)
+        img_base64 = base64.b64encode(buffer.getvalue()).decode()
+        
+        logging.info(f"✅ Brcode PIX gerado com sucesso: {chave_pix[:10]}... | Valor: R$ {valor}")
+        
+        return jsonify({
+            "status": "sucesso",
+            "qr_code_base64": f"data:image/png;base64,{img_base64}",
+            "brcode_texto": brcode_texto,
+            "chave_pix": chave_pix,
+            "valor": valor
+        }), 200
+        
+    except Exception as e:
+        logging.error(f"❌ Erro ao gerar Brcode PIX: {e}", exc_info=True)
+        return jsonify({
+            "status": "erro",
+            "mensagem": f"Erro ao gerar QR Code PIX: {str(e)}"
         }), 500
 
 
@@ -1512,8 +1619,6 @@ def atualizar_status_pedido():
 def dashboard():
 # Renderiza a página do dashboard
     return render_template('dashboard.html')
-
-
 
 # Permite acesso por IP local da rede
 app.run(host='0.0.0.0', port=5000, debug=True, use_reloader=True)

@@ -921,11 +921,79 @@
             box-shadow: var(--shadow-xl);
         }
 
-        .btn-whatsapp:active:not(:disabled) {
-            transform: translateY(-1px);
-        }
+            .btn-whatsapp:active:not(:disabled) {
+                transform: translateY(-1px);
+            }
 
-        .btn-print {
+            /* --- MELHORIAS NOS BOTÕES --- */
+            .btn-save-improved {
+                background: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-light) 100%) !important;
+                color: white !important;
+                box-shadow: 0 4px 15px rgba(0, 78, 137, 0.3) !important;
+            }
+            .btn-save-improved:hover:not(:disabled) {
+                transform: translateY(-3px) scale(1.02) !important;
+                box-shadow: 0 8px 25px rgba(0, 78, 137, 0.4) !important;
+            }
+            .btn-pix-improved {
+                background: linear-gradient(135deg, #32BCAD 0%, #009B8A 100%) !important;
+                color: white !important;
+                box-shadow: 0 4px 15px rgba(50, 188, 173, 0.3) !important;
+            }
+            .btn-pix-improved:hover:not(:disabled) {
+                transform: translateY(-3px) scale(1.02) !important;
+                box-shadow: 0 8px 25px rgba(50, 188, 173, 0.4) !important;
+            }
+            .loader-inline {
+                width: 18px;
+                height: 18px;
+                border: 2px solid rgba(255,255,255,0.3);
+                border-radius: 50%;
+                border-top-color: #fff;
+                animation: spin 1s linear infinite;
+                display: none;
+                margin-left: 10px;
+            }
+            @keyframes spin { to { transform: rotate(360deg); } }
+
+            /* MODAL PIX */
+            .pix-modal-overlay {
+                display: none;
+                position: fixed;
+                top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0,0,0,0.7);
+                z-index: 9999;
+                justify-content: center;
+                align-items: center;
+                backdrop-filter: blur(5px);
+            }
+            .pix-modal-card {
+                background: white;
+                padding: 30px;
+                border-radius: 20px;
+                max-width: 400px;
+                width: 90%;
+                text-align: center;
+                position: relative;
+                box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            }
+            .pix-modal-close {
+                position: absolute;
+                top: 15px; right: 15px;
+                font-size: 24px; cursor: pointer; color: #667eea;
+            }
+            .pix-copy-box {
+                background: #f8f9fa;
+                padding: 15px;
+                border-radius: 12px;
+                margin: 20px 0;
+                word-break: break-all;
+                font-family: monospace;
+                border: 1px dashed #32BCAD;
+                cursor: pointer;
+            }
+
+            .btn-print {
             background: linear-gradient(135deg, var(--accent) 0%, #E0A700 100%);
             color: white;
             box-shadow: var(--shadow-lg);
@@ -1079,24 +1147,39 @@
                         <input type="text" id="customerName" name="nome_cliente" placeholder="Digite o nome completo" required>
                     </div>
 
+                    <div class="form-group full-widht">
+                        <label>E-MAIL</label>
+                        <input type="email" id="customerEmail" name="email" placeholder="Digite o e-mail" required>
+                    </div>
+
                     <div class="form-group full-width">
                         <label>Endereço</label>
-                        <input type="text" id="customerAddress" placeholder="Digite o endereço completo" required>
+                        <input type="text" id="customerAddress" name="endereco" placeholder="Digite o endereço completo" required>
                     </div>
 
                     <div class="form-group">
                         <label>Bairro</label>
-                        <input type="text" id="customerBairro" placeholder="Digite o bairro" required>
+                        <input type="text" id="customerBairro" name="bairro" placeholder="Digite o bairro" required>
+                    </div>
+
+                    <div class="form-group full-widht">
+                        <label>Cidade</label>
+                        <input type="text" id="customerCidade" name="cidade" placeholder="Digite a cidade" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>UF</label>
+                        <input type="text" id="customerUf" name="uf" placeholder="Digite a UF" maxlength="2" style="text-transform:uppercase;" required>
                     </div>
 
                     <div class="form-group">
                         <label>Ponto de Referência</label>
-                        <input type="text" id="customerReferencia" placeholder="Ponto de referência" required>
+                        <input type="text" id="customerReferencia" name="ponto_referencia" placeholder="Ponto de referência" required>
                     </div>
 
                     <div class="form-group">
                         <label>Forma de Pagamento</label>
-                        <select id="form_pgmto" required>
+                        <select id="form_pgmto" name="forma_pagamento" required>
                             <option value="">Selecione</option>
                             <option value="Dinheiro">Dinheiro</option>
                             <option value="Pix">Pix</option>
@@ -1106,7 +1189,7 @@
 
                     <div class="form-group">
                         <label>Tipo de Consumo</label>
-                        <select id="tipo_consumo" required>
+                        <select id="tipo_consumo" name="tipo_consumo" required>
                             <option value="">Selecione</option>
                             <option value="No Local">No Local</option>
                             <option value="Delivery">Delivery</option>
@@ -1116,16 +1199,16 @@
 
                     <div class="form-group">
                         <label>Telefone/WhatsApp</label>
-                        <input type="tel" id="customerPhone" placeholder="(00) 00000-0000" maxlength="15">
+                        <input type="tel" id="customerPhone" name="telefone" placeholder="(00) 00000-0000" maxlength="15">
                     </div>
 
                     <div class="form-group">
                         <label>Nº Mesa (Opcional)</label>
-                        <input type="number" id="tableNumber" placeholder="Número da mesa" min="0">
+                        <input type="number" id="tableNumber" name="numero_mesa" placeholder="Número da mesa" min="0">
                     </div>
                     <div class="form-group">
                         <label>Observações</label>
-                        <input type="text" id="observacao" placeholder="Digite uma observação" >
+                        <input type="text" id="observacao" name="observacao" placeholder="Digite uma observação" >
                     </div>
 
                     <!-- Taxa de Entrega com destaque visual -->
@@ -1190,18 +1273,102 @@
             </div>
 
             <!-- QR CODE PIX -->
-            <div class="card" id="qrcodeContainer" style="display: none;">
-                <div class="qr-label">📱 Escaneie para pagar com PIX</div>
-                <div id="qrcode"></div>
-                <input type="text" id="pixKeyCopyPaste" class="pix-key-input" readonly onclick="this.select()" placeholder="Chave PIX">
-            </div>
+<div class="card" id="qrcodeContainer" style="display: none;">
+    <div class="qr-label">📱 Escaneie para pagar com PIX</div>
+    <div id="qrcode"></div>
+</div>
+
+<!-- BOTÃO COPIAR CHAVE PIX -->
+<div class="card" id="pixCopyContainer" style="display: none;">
+    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+        <div style="width: 40px; height: 40px; border-radius: 50%; background: #ECFDF5; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+            <span style="font-size: 20px;">📋</span>
+        </div>
+        <div>
+            <p style="font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 16px; margin: 0; color: var(--dark);">Pagar com PIX</p>
+            <p style="font-size: 13px; color: var(--gray-600); margin: 0;">Copie a chave e cole no seu banco</p>
+        </div>
+    </div>
+
+    <label style="font-size: 11px; color: var(--gray-600); text-transform: uppercase; letter-spacing: 0.8px; font-weight: 600; font-family: 'Outfit', sans-serif;">Chave PIX</label>
+    <div style="display: flex; gap: 10px; margin-top: 8px;">
+        <input
+            type="text"
+            id="pixKeyCopyPaste"
+            class="pix-key-input"
+            readonly
+            onclick="this.select()"
+            style="flex: 1; min-width: 0; font-family: 'Courier New', monospace; font-size: 14px;"
+            placeholder="Chave PIX"
+        />
+        <button
+            id="btnCopiarPix"
+            onclick="copiarChavePix()"
+            style="
+                flex-shrink: 0;
+                padding: 12px 18px;
+                background: linear-gradient(135deg, var(--success) 0%, #05BB8A 100%);
+                color: white;
+                border: none;
+                border-radius: var(--radius-sm);
+                cursor: pointer;
+                font-size: 14px;
+                font-weight: 700;
+                font-family: 'Outfit', sans-serif;
+                transition: var(--transition);
+                box-shadow: var(--shadow-sm);
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                white-space: nowrap;
+            "
+            onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='var(--shadow-md)'"
+            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='var(--shadow-sm)'"
+        >
+            <span id="pixBtnIcon">📋</span>
+            <span id="pixBtnLabel">Copiar Chave</span>
+        </button>
+    </div>
+
+    <div id="pixFeedback" style="
+        display: none;
+        align-items: center;
+        gap: 8px;
+        margin-top: 14px;
+        background: #ECFDF5;
+        border: 1.5px solid var(--success);
+        border-radius: var(--radius-sm);
+        padding: 12px 16px;
+    ">
+        <span style="font-size: 18px;">✅</span>
+        <span style="font-size: 13px; color: #065F46; font-weight: 600; font-family: 'Lexend', sans-serif;">
+            Chave copiada! Cole no app do seu banco para concluir o pagamento.
+        </span>
+    </div>
+
+    <p style="font-size: 12px; color: var(--gray-500); text-align: center; margin-top: 14px; margin-bottom: 0;">
+        Beneficiário: <strong style="color: var(--gray-700);">WILLIAMS RODRIGUES VIEIRA SILVA</strong>
+    </p>
+</div>
 
             <!-- BOTÕES DE AÇÃO -->
             <button class="btn-checkout btn-whatsapp" id="whatsappBtn" disabled>
                 📱 Enviar via WhatsApp
             </button>
 
-        
+            <!-- BOTÕES DE AÇÃO MELHORADOS -->
+            <button class="btn-checkout btn-save-improved" id="salvar_Pedido" enabled>
+                <span class="btn-icon">💾</span>
+                <span class="btn-text">Salvar Pedido</span>
+                <div class="loader-inline" id="save_loader"></div>
+            </button>
+
+            <!--BOTÃO PAGAR MELHORADO-->
+            <button class="btn-checkout btn-pix-improved" id="pagar_Pedido" enabled>
+                <span class="btn-icon">💳</span>
+                <span class="btn-text">Pagar com Pix</span>
+                <div class="loader-inline" id="pix_loader"></div>
+            </button>
         
         </div>
     </div>
@@ -1211,7 +1378,46 @@
         © 2025 Date Analytics. Todos os direitos reservados.
     </footer>
 
+    <!-- MODAL PIX MELHORADO -->
+    <div class="pix-modal-overlay" id="pixModalOverlay">
+        <div class="pix-modal-card">
+            <span class="pix-modal-close" onclick="closePixModal()">&times;</span>
+            <h2 style="font-family: 'Outfit'; color: #009B8A; margin-bottom: 10px;">Pagamento via Pix</h2>
+            <p style="color: #666; font-size: 14px;">Escaneie o QR Code ou copie a chave abaixo</p>
+            
+            <div id="qrcode_canvas_container" style="display: flex; justify-content: center; margin: 20px 0;"></div>
+            
+            <p style="font-weight: bold; font-size: 18px;">Total: <span id="pix_modal_total" style="color: #FF6B35;">R$ 0,00</span></p>
+            
+            <div class="pix-copy-box" id="pix_key_text" onclick="copyPixToClipboard()">
+                Clique para copiar a chave Pix
+            </div>
+            <p id="copy_feedback" style="color: #06D6A0; font-size: 12px; display: none; font-weight: bold;">Chave copiada com sucesso! ✅</p>
+            
+            <p style="font-size: 11px; color: #999; margin-top: 15px;">
+                Após pagar, envie o comprovante para agilizar seu pedido.
+            </p>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.4.4/build/qrcode.min.js"></script>
+    <script>
+        // Aguardar que a biblioteca QRCode seja carregada
+        let qrcodeReady = false;
+        window.addEventListener('load', () => {
+            if (typeof QRCode !== 'undefined') {
+                qrcodeReady = true;
+                console.log('✅ Biblioteca QRCode.js carregada e pronta');
+            }
+        });
+        // Também verificar após 1 segundo (fallback)
+        setTimeout(() => {
+            if (typeof QRCode !== 'undefined' && !qrcodeReady) {
+                qrcodeReady = true;
+                console.log('✅ Biblioteca QRCode.js detectada (verificação 1s)');
+            }
+        }, 1000);
+    </script>
     
     <script>
         // DEBUG: Verificar se estamos em ambiente de debug
@@ -1223,7 +1429,7 @@
         let productCounter = 0;
         
         const WHATSAPP_LOJISTA = '5582981090042';
-        const CHAVE_PIX = 'MINHA CHAVE PIX FICARÁ AQUI';
+        const CHAVE_PIX = '05566941478';  // 👈 Substitua pela sua chave PIX real (CPF, email, telefone ou chave aleatória)
         const NOME_BENEFICIARIO = 'WILLIAMS RODRIGUES VIEIRA SILVA';
         const TAXA_ENTREGA = 6.00; // Taxa de entrega fixa
 
@@ -1545,7 +1751,9 @@
             const totalAmountElement = document.getElementById('totalAmount');
             totalAmountElement.textContent = `R$ ${totalAmount.toFixed(2).replace('.', ',')}`;
 
-            updateQRCode(totalAmount);
+            // Comentado temporariamente para debugging
+            // updateQRCode(totalAmount);
+            console.log('📊 Total atualizado:', totalAmount);
         }
 
         function gerarQRCodePIX(valor) {
@@ -1576,61 +1784,71 @@
             qrcodeDiv.innerHTML = '';
 
             if (valor > 0) {
-                const pixInfo = gerarQRCodePIX(valor);
-
                 // Mostrar container do QR Code
                 qrcodeContainer.style.display = 'block';
+                
+                // Mostrar mensagem de carregamento
+                qrcodeDiv.innerHTML = '<div style="text-align: center; padding: 20px;"><p>🔄 Gerando QR Code PIX...</p></div>';
 
-                // Gerar QR Code com dados simples
-                const qrText = `https://www.bcb.gov.br/pix?chave=${CHAVE_PIX}&valor=${valor.toFixed(2)}&nome=${NOME_BENEFICIARIO}`;
-
-                try {
-                    if (typeof QRCode !== 'undefined') {
-                        // Compatibilidade com diferentes bibliotecas qrcode.js
-                        if (QRCode.CorrectLevel && typeof QRCode === 'function') {
-                            new QRCode(qrcodeDiv, {
-                                text: qrText,
-                                width: 200,
-                                height: 200,
-                                colorDark: "#2d3748",
-                                colorLight: "#ffffff",
-                                correctLevel: QRCode.CorrectLevel.H
-                            });
-                        } else if (typeof QRCode.toCanvas === 'function') {
-                            // Biblioteca 'qrcode' (npm) expõe toCanvas
-                            QRCode.toCanvas(qrcodeDiv, qrText, {
-                                width: 200,
-                                color: { dark: '#2d3748', light: '#ffffff' }
-                            }, function(err) {
-                                if (err) console.error('Erro ao gerar QR (toCanvas):', err);
-                            });
-                        } else if (typeof QRCode.toDataURL === 'function') {
-                            QRCode.toDataURL(qrText, { width: 200 }, function(err, url) {
-                                if (err) {
-                                    console.error('Erro ao gerar QR (toDataURL):', err);
-                                } else {
-                                    const img = new Image();
-                                    img.src = url;
-                                    qrcodeDiv.appendChild(img);
-                                }
-                            });
-                        } else {
-                            console.warn('Biblioteca QRCode presente, API inesperada. Exibindo texto.');
-                            qrcodeDiv.textContent = qrText;
+                // Buscar Brcode PIX do servidor (verdadeiro QR Code do Banco Central)
+                fetch('/gerar_brcode_pix', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chave_pix: CHAVE_PIX,
+                        valor: valor,
+                        nome_beneficiario: NOME_BENEFICIARIO
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'sucesso') {
+                        // Exibir QR Code gerado pelo servidor
+                        const img = new Image();
+                        img.src = data.qr_code_base64;
+                        img.style.width = '200px';
+                        img.style.height = '200px';
+                        qrcodeDiv.innerHTML = '';
+                        qrcodeDiv.appendChild(img);
+                        
+                        // Exibir Brcode (cópia e cola) no input
+                        if (pixKeyCopyPaste) {
+                            pixKeyCopyPaste.value = data.brcode_texto;
+                            console.log('✅ Brcode PIX verdadeiro gerado (Banco Central)');
+                            console.log('✅ QR Code exibido com sucesso');
                         }
                     } else {
-                        console.warn('Biblioteca QRCode não encontrada. Exibindo texto.');
-                        qrcodeDiv.textContent = qrText;
+                        // Se falhar a geração, usar fallback
+                        console.warn('⚠️ Falha ao gerar Brcode PIX:', data.mensagem);
+                        generateQRCodeFallback(valor);
                     }
-                } catch (err) {
-                    console.error('Erro gerando QRCode:', err);
-                    qrcodeDiv.textContent = qrText;
-                }
-
-                // Exibir chave PIX para cópia e cola
-                if (pixKeyCopyPaste) pixKeyCopyPaste.value = CHAVE_PIX;
+                })
+                .catch(err => {
+                    console.error('❌ Erro ao buscar Brcode PIX:', err);
+                    generateQRCodeFallback(valor);
+                });
             } else {
                 qrcodeContainer.style.display = 'none';
+            }
+        }
+
+        // Fallback: exibir apenas a chave PIX se o servidor não conseguir gerar QR Code
+        function generateQRCodeFallback(valor) {
+            const qrcodeDiv = document.getElementById('qrcode');
+            const pixKeyCopyPaste = document.getElementById('pixKeyCopyPaste');
+
+            qrcodeDiv.innerHTML = '';
+
+            // Mostrar mensagem
+            qrcodeDiv.innerHTML = `<div style="text-align: center; padding: 20px; background: #f5f5f5; border-radius: 8px;">
+                <p style="font-size: 12px; color: #666;">Escaneie com o seu banco</p>
+                <p style="font-size: 12px; color: #999;">ou copie a chave abaixo</p>
+            </div>`;
+
+            // Exibir chave PIX para cópia e cola
+            if (pixKeyCopyPaste) {
+                pixKeyCopyPaste.value = CHAVE_PIX;
+                console.log('✅ Chave PIX exibida para copiar:', CHAVE_PIX);
             }
         }
 
@@ -1676,10 +1894,13 @@
                     body: JSON.stringify({
                         carrinho: carrinho,
                         nome_cliente: customerInfo.nome,
+                        email_cliente: document.getElementById('customerEmail').value || '',
                         telefone_cliente: customerInfo.telefone,
                         numero_mesa: document.getElementById('tableNumber').value || null,
                         endereco: document.getElementById('customerAddress').value || '',
                         bairro: document.getElementById('customerBairro').value || '',
+                        cidade: document.getElementById('customerCidade').value || '',
+                        uf: document.getElementById('customerUf').value || '',
                         ponto_referencia: document.getElementById('customerReferencia').value || '',
                         form_pgmto: document.getElementById('form_pgmto').value || '',
                         tipo_consumo: document.getElementById('tipo_consumo').value || '',
@@ -1749,10 +1970,13 @@
                     body: JSON.stringify({
                         carrinho: carrinho,
                         nome_cliente: customerInfo.nome,
+                        email_cliente: document.getElementById('customerEmail').value || '',
                         telefone_cliente: customerInfo.telefone,
                         numero_mesa: document.getElementById('tableNumber').value || null,
                         endereco: document.getElementById('customerAddress').value || '',
                         bairro: document.getElementById('customerBairro').value || '',
+                        cidade: document.getElementById('customerCidade').value || '',
+                        uf: document.getElementById('customerUf').value || '',
                         ponto_referencia: document.getElementById('customerReferencia').value || '',
                         form_pgmto: document.getElementById('form_pgmto').value || '',
                         tipo_consumo: document.getElementById('tipo_consumo').value || '',
@@ -1901,7 +2125,17 @@
                         body: JSON.stringify({
                             carrinho: carrinho,
                             nome_cliente: customerInfo.nome,
+                            email_cliente: document.getElementById('customerEmail').value || '',
                             telefone_cliente: customerInfo.telefone,
+                            numero_mesa: document.getElementById('tableNumber').value || null,
+                            endereco: document.getElementById('customerAddress').value || '',
+                            bairro: document.getElementById('customerBairro').value || '',
+                            cidade: document.getElementById('customerCidade').value || '',
+                            uf: document.getElementById('customerUf').value || '',
+                            ponto_referencia: document.getElementById('customerReferencia').value || '',
+                            form_pgmto: document.getElementById('form_pgmto').value || '',
+                            tipo_consumo: document.getElementById('tipo_consumo').value || '',
+                            observacao: document.getElementById('observacao').value || '',
                             taxa_entrega: taxaEntrega
                         })
                     });
@@ -1948,7 +2182,164 @@
         }
 
         updateCartDisplay();
-        
+
+        // --- MELHORIAS NOS BOTÕES (LOGICA JS) ---
+
+        // --- GERADOR DE PIX ROBUSTO (PADRÃO BRCODE) ---
+        function generatePixPayload(chave, valor, beneficiario, cidade) {
+            const pad = (id, val) => id + String(val.length).padStart(2, '0') + val;
+            
+            // 26 - Merchant Account Information (GUI + Chave)
+            const merchantInfo = pad('00', 'br.gov.bcb.brcode') + pad('01', chave);
+            
+            let payload = pad('00', '01'); // Payload Format Indicator
+            payload += pad('26', merchantInfo);
+            payload += pad('52', '0000'); // Merchant Category Code
+            payload += pad('53', '986');  // Transaction Currency (BRL)
+            payload += pad('54', valor.toFixed(2)); // Transaction Amount
+            payload += pad('58', 'BR');   // Country Code
+            payload += pad('59', beneficiario.substring(0, 25).toUpperCase()); // Merchant Name
+            payload += pad('60', cidade.substring(0, 15).toUpperCase());       // Merchant City
+            payload += pad('62', pad('05', '***')); // Additional Data Field (TXID)
+            
+            payload += '6304'; // CRC16 Indicator
+            
+            // Cálculo do CRC16 CCITT
+            function crc16(data) {
+                let res = 0xFFFF;
+                for (let i = 0; i < data.length; i++) {
+                    res ^= data.charCodeAt(i) << 8;
+                    for (let j = 0; j < 8; j++) {
+                        if ((res & 0x8000) !== 0) res = (res << 1) ^ 0x1021;
+                        else res <<= 1;
+                        res &= 0xFFFF;
+                    }
+                }
+                return res.toString(16).toUpperCase().padStart(4, '0');
+            }
+            
+            return payload + crc16(payload);
+        }
+
+        let currentPixPayload = "";
+
+        // Função para abrir o Modal do Pix
+        function openPixModal(valor) {
+            const modal = document.getElementById('pixModalOverlay');
+            const totalSpan = document.getElementById('pix_modal_total');
+            const qrcodeContainer = document.getElementById('qrcode_canvas_container');
+            const pixKeyText = document.getElementById('pix_key_text');
+            
+            totalSpan.textContent = `R$ ${valor.toFixed(2).replace('.', ',')}`;
+            
+            // Gerar o Payload Real
+            currentPixPayload = generatePixPayload(CHAVE_PIX, valor, NOME_BENEFICIARIO, "SAO PAULO");
+            
+            // Exibir parte do payload ou instrução no box de cópia
+            pixKeyText.textContent = "Clique para copiar o código Pix Copia e Cola";
+            
+            qrcodeContainer.innerHTML = '<p style="font-size: 12px; color: #666;">Gerando QR Code...</p>';
+            modal.style.display = 'flex';
+
+            // Gerar o QR Code usando a biblioteca QRCode.js
+            setTimeout(() => {
+                qrcodeContainer.innerHTML = '';
+                QRCode.toCanvas(currentPixPayload, { 
+                    width: 220, 
+                    margin: 2,
+                    color: { dark: '#004E89', light: '#ffffff' }
+                }, function (error, canvas) {
+                    if (error) {
+                        console.error(error);
+                        qrcodeContainer.innerHTML = '<p style="color: red;">Erro ao gerar QR Code</p>';
+                    } else {
+                        qrcodeContainer.appendChild(canvas);
+                    }
+                });
+            }, 500);
+        }
+
+        function closePixModal() {
+            document.getElementById('pixModalOverlay').style.display = 'none';
+            document.getElementById('copy_feedback').style.display = 'none';
+        }
+
+        function copyPixToClipboard() {
+            if (!currentPixPayload) return;
+            
+            // Usar fallback se navigator.clipboard falhar
+            const textArea = document.createElement("textarea");
+            textArea.value = currentPixPayload;
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                const feedback = document.getElementById('copy_feedback');
+                feedback.style.display = 'block';
+                setTimeout(() => { feedback.style.display = 'none'; }, 3000);
+            } catch (err) {
+                console.error('Erro ao copiar:', err);
+            }
+            document.body.removeChild(textArea);
+        }
+
+        // Event Listener para o botão Pagar com Pix
+        document.getElementById('pagar_Pedido')?.addEventListener('click', function(e) {
+            e.preventDefault();
+            const subtotalProdutos = carrinho.reduce((sum, item) => sum + item.subtotal, 0);
+            const taxaEntrega = getTaxaEntrega();
+            const totalAmount = subtotalProdutos + taxaEntrega;
+
+            if (totalAmount <= 0) {
+                alert('🛒 Adicione itens ao pedido primeiro!');
+                return;
+            }
+
+            const btn = this;
+            const loader = document.getElementById('pix_loader');
+            btn.disabled = true;
+            loader.style.display = 'inline-block';
+
+            setTimeout(() => {
+                openPixModal(totalAmount);
+                btn.disabled = false;
+                loader.style.display = 'none';
+            }, 800);
+        });
+
+        // Melhoria no feedback do botão Salvar Pedido
+        const originalSalvarPedido = document.getElementById('salvar_Pedido');
+        if (originalSalvarPedido) {
+            const oldClick = originalSalvarPedido.onclick; // Preservar lógica original se houver
+            originalSalvarPedido.addEventListener('click', async function() {
+                if (carrinho.length === 0) return;
+                
+                const btn = this;
+                const loader = document.getElementById('save_loader');
+                const text = btn.querySelector('.btn-text');
+                const icon = btn.querySelector('.btn-icon');
+                
+                const originalText = text.textContent;
+                
+                btn.disabled = true;
+                loader.style.display = 'inline-block';
+                text.textContent = 'Processando...';
+                
+                // O evento de clique original (que faz o fetch) será disparado pelo script original
+                // Nós apenas adicionamos o feedback visual aqui.
+                
+                setTimeout(() => {
+                    if (!btn.disabled) return; // Se já foi resetado por outra função
+                    
+                    // Se o alerta de sucesso aparecer (lógica original), o script original limpa o carrinho
+                    // Nós apenas garantimos que o botão volte ao normal se necessário
+                    btn.disabled = false;
+                    loader.style.display = 'none';
+                    text.textContent = originalText;
+                }, 4000);
+            });
+        }
+
         // Mostrar mensagem inicial se não houver produtos
         if (document.getElementById('productsList').children.length === 0) {
             const emptyState = document.createElement('div');
@@ -2158,9 +2549,12 @@ document.getElementById('printBtn')?.addEventListener('click', async function ()
                 carrinho: carrinho,
                 nome_cliente: customerInfo.nome,
                 telefone_cliente: customerInfo.telefone,
+                email_cliente: document.getElementById('customerEmail').value || '',
                 numero_mesa: document.getElementById('tableNumber')?.value || null,
                 endereco: document.getElementById('customerAddress').value || '',
                 bairro: document.getElementById('customerBairro').value || '',
+                cidade: document.getElementById('customerCidade').value || '',
+                uf: document.getElementById('customerUf').value || '',
                 ponto_referencia: document.getElementById('customerReferencia').value || '',
                 form_pgmto: document.getElementById('form_pgmto').value || '',
                 tipo_consumo: document.getElementById('tipo_consumo').value || '',
@@ -2262,7 +2656,6 @@ function initializeSystem() {
 }
 
     </script>
-
 
 </body>
 </html>
