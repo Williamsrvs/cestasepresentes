@@ -1188,7 +1188,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Tipo de Consumo</label>
+                        <label>Tipo de Entrega | R</label>
                         <select id="tipo_consumo" name="tipo_consumo" required>
                             <option value="">Selecione</option>
                             <option value="No Local">No Local</option>
@@ -1203,8 +1203,8 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Nº Mesa (Opcional)</label>
-                        <input type="number" id="tableNumber" name="numero_mesa" placeholder="Número da mesa" min="0">
+                        <label>Nº Casa</label>
+                        <input type="number" id="tableNumber" name="numero_casa" placeholder="Número da casa" min="0">
                     </div>
                     <div class="form-group">
                         <label>Observações</label>
@@ -1636,7 +1636,7 @@
             const quantidade = parseInt(qtyInput.value);
             const valor = parseFloat(priceInput.value);
 
-            if (!produtoId) {
+            if (selectElement.value === "" || isNaN(produtoId)) {
                 alert('⚠️ Por favor, selecione um produto.');
                 selectElement.focus();
                 return;
@@ -1896,7 +1896,7 @@
                         nome_cliente: customerInfo.nome,
                         email_cliente: document.getElementById('customerEmail').value || '',
                         telefone_cliente: customerInfo.telefone,
-                        numero_mesa: document.getElementById('tableNumber').value || null,
+                        numero_casa: document.getElementById('tableNumber').value || null,
                         endereco: document.getElementById('customerAddress').value || '',
                         bairro: document.getElementById('customerBairro').value || '',
                         cidade: document.getElementById('customerCidade').value || '',
@@ -1972,7 +1972,7 @@
                         nome_cliente: customerInfo.nome,
                         email_cliente: document.getElementById('customerEmail').value || '',
                         telefone_cliente: customerInfo.telefone,
-                        numero_mesa: document.getElementById('tableNumber').value || null,
+                        numero_casa: document.getElementById('tableNumber').value || null,
                         endereco: document.getElementById('customerAddress').value || '',
                         bairro: document.getElementById('customerBairro').value || '',
                         cidade: document.getElementById('customerCidade').value || '',
@@ -2008,7 +2008,7 @@
                 // Incluindo número da mesa se informado
                 const mesaNumber = document.getElementById('tableNumber').value;
                 if (mesaNumber) {
-                    mensagem += `🪑 *Nº Mesa:* ${mesaNumber}\n`;
+                    mensagem += `🪑 *Nº Casa:* ${mesaNumber}\n`;
                 }
                 mensagem += `\n*📋 Itens do Pedido:*\n`;
                 
@@ -2127,7 +2127,7 @@
                             nome_cliente: customerInfo.nome,
                             email_cliente: document.getElementById('customerEmail').value || '',
                             telefone_cliente: customerInfo.telefone,
-                            numero_mesa: document.getElementById('tableNumber').value || null,
+                            numero_casa: document.getElementById('tableNumber').value || null,
                             endereco: document.getElementById('customerAddress').value || '',
                             bairro: document.getElementById('customerBairro').value || '',
                             cidade: document.getElementById('customerCidade').value || '',
@@ -2550,7 +2550,7 @@ document.getElementById('printBtn')?.addEventListener('click', async function ()
                 nome_cliente: customerInfo.nome,
                 telefone_cliente: customerInfo.telefone,
                 email_cliente: document.getElementById('customerEmail').value || '',
-                numero_mesa: document.getElementById('tableNumber')?.value || null,
+                numero_casa: document.getElementById('tableNumber')?.value || null,
                 endereco: document.getElementById('customerAddress').value || '',
                 bairro: document.getElementById('customerBairro').value || '',
                 cidade: document.getElementById('customerCidade').value || '',
