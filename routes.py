@@ -49,17 +49,29 @@ logging.info(f"📡 Conectando em: {Config.MYSQL_HOST}")
 logging.info(f"👤 Usuário: {Config.MYSQL_USER}")
 logging.info(f"🗄️  Database: {Config.MYSQL_DB}")
 
+def ler_sql_robusto(schema_path):
+    encodings = ['utf-8-sig', 'utf-8', 'latin-1', 'cp1252']
+    for encoding in encodings:
+        try:
+            with open(schema_path, 'r', encoding=encoding) as f:
+                return f.read()
+        except UnicodeDecodeError:
+            continue
+    with open(schema_path, 'r', encoding='utf-8', errors='replace') as f:
+        return f.read()
+
+
 def criar_tabelas():
     try:
         with app.app_context():
             cur = mysql.connection.cursor()
             schema_path = os.path.join(os.path.dirname(__file__), 'schema.sql')
-            with open(schema_path, 'r', encoding='utf-8') as f:
-                sql_commands = f.read().split(';')
-                for command in sql_commands:
-                    cmd = command.strip()
-                    if cmd and cmd.lower().startswith('create table'):
-                        cur.execute(cmd)
+            sql_text = ler_sql_robusto(schema_path)
+            sql_commands = sql_text.split(';')
+            for command in sql_commands:
+                cmd = command.strip()
+                if cmd and cmd.lower().startswith('create table'):
+                    cur.execute(cmd)
             mysql.connection.commit()
             cur.close()
             logging.info('✅ Tabelas criadas/verificadas com sucesso.')

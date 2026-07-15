@@ -71,18 +71,30 @@ logging.info(f"📡 Conectando em: {Config.MYSQL_HOST}")
 logging.info(f"👤 Usuário: {Config.MYSQL_USER}")
 logging.info(f"🗄️  Database: {Config.MYSQL_DB}")
 
+def ler_sql_robusto(schema_path):
+    encodings = ['utf-8-sig', 'utf-8', 'latin-1', 'cp1252']
+    for encoding in encodings:
+        try:
+            with open(schema_path, 'r', encoding=encoding) as f:
+                return f.read()
+        except UnicodeDecodeError:
+            continue
+    with open(schema_path, 'r', encoding='utf-8', errors='replace') as f:
+        return f.read()
+
+
 def criar_tabelas():
     try:
         with app.app_context():
             conn = MySQLConnection.get_connection()
             cur = conn.cursor(dictionary=True)
             schema_path = os.path.join(os.path.dirname(__file__), 'schema.sql')
-            with open(schema_path, 'r', encoding='utf-8') as f:
-                sql_commands = f.read().split(';')
-                for command in sql_commands:
-                    cmd = command.strip()
-                    if cmd and cmd.lower().startswith('create table'):
-                        cur.execute(cmd)
+            sql_text = ler_sql_robusto(schema_path)
+            sql_commands = sql_text.split(';')
+            for command in sql_commands:
+                cmd = command.strip()
+                if cmd and cmd.lower().startswith('create table'):
+                    cur.execute(cmd)
             conn.commit()
             cur.close()
             conn.close()
@@ -1620,5 +1632,5 @@ def dashboard():
 # Renderiza a página do dashboard
     return render_template('dashboard.html')
 
-# Permite acesso por IP local da rede
-app.run(host='0.0.0.0', port=5000, debug=True, use_reloader=True)
+# A execução da aplicação é controlada pelo entrypoint app.py
+# para evitar problemas de carregamento de ambiente em diferentes contextos.

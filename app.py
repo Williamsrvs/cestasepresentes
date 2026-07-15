@@ -7,15 +7,24 @@ Point of entry para executar o servidor
 
 import os
 import sys
+import threading
 
 # Adicionar o diretório app ao path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'app'))
 
 from routes import app, criar_tabelas
 
+
+def iniciar_setup_em_segundo_plano():
+    try:
+        criar_tabelas()
+    except Exception as e:
+        print(f"⚠️  Setup do banco não bloqueou a inicialização: {e}")
+
+
 if __name__ == '__main__':
-    # Criar tabelas ao iniciar
-    criar_tabelas()
+    # Criar tabelas em segundo plano para não travar a subida do servidor
+    threading.Thread(target=iniciar_setup_em_segundo_plano, daemon=True).start()
     
     # Determinar ambiente (desenvolvimento ou produção)
     debug_mode = os.getenv('FLASK_ENV', 'development') == 'development'

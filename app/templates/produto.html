@@ -480,19 +480,13 @@
                 <div class="select-wrap">
                     <select id="d_subgrupo" name="subgrupo" required>
                         <option value="">Selecione um subgrupo</option>
-                        <option value="Prato da Casa">Prato da Casa</option>
-                        <option value="Acompanhamento">Acompanhamento</option>
-                        <option value="Sobremesa">Sobremesa</option>
-                        <option value="Porção">Porção</option>
-                        <option value="Peixada">Peixada</option>
-                        <option value="Bebidas">Bebidas</option>
-                        <option value="Quentinha (M)">Quentinha (M)</option>
-                        <option value="Quentinha (G)">Quentinha (G)</option>
-                        <option value="Hamburguer">Hamburguer</option>
-                        <option value="Passaportes">Passaportes</option>
-                        <option value="Sanduiches">Sanduiches</option>
-                        <option value="Pasteis">Pasteis</option>
-                        <option value="Salgados">Salgados</option>
+                        <option value="Cestas e Presentes">Cestas Personalizadas</option>
+                        <option value="Mimos Personalizados">Mimos Personalizados</option>
+                        <option value="Buquê com Rosa de Cetim">Buquê com Rosa de Cetim</option>
+                        <option value="Buquê de borboletas">Buquê de borboletas</option>
+                        <option value="Pelucias">Pelucias</option>
+                        <option value="Chocolates">Chocolates</option>
+                        <option value="Outros">Outros</option>                        
                     </select>
                 </div>
             </div>
@@ -505,6 +499,7 @@
                         <option value="Promoção da casa">Promoção da casa</option>
                         <option value="Black Friday">Black Friday</option>
                         <option value="Sem promoção">Sem promoção</option>
+                        <option value="Promoção do Aniversariante">Promoção do Aniversariante</option>
                     </select>
                 </div>
             </div>
@@ -655,19 +650,13 @@
                 <div class="select-wrap">
                     <select name="subgrupo" required>
                         <option value="">Selecione um subgrupo</option>
-                        <option value="Prato da Casa"   {% if p.subgrupo == 'Prato da Casa' %}selected{% endif %}>Prato da Casa</option>
-                        <option value="Acompanhamento"  {% if p.subgrupo == 'Acompanhamento' %}selected{% endif %}>Acompanhamento</option>
-                        <option value="Sobremesa"       {% if p.subgrupo == 'Sobremesa' %}selected{% endif %}>Sobremesa</option>
-                        <option value="Peixada"         {% if p.subgrupo == 'Peixada' %}selected{% endif %}>Peixada</option>
-                        <option value="Quentinha (M)"   {% if p.subgrupo == 'Quentinha (M)' %}selected{% endif %}>Quentinha (M)</option>
-                        <option value="Quentinha (G)"   {% if p.subgrupo == 'Quentinha (G)' %}selected{% endif %}>Quentinha (G)</option>
-                        <option value="Porção"          {% if p.subgrupo == 'Porção' %}selected{% endif %}>Porção</option>
-                        <option value="Bebidas"         {% if p.subgrupo == 'Bebidas' %}selected{% endif %}>Bebidas</option>
-                        <option value="Hamburguer"      {% if p.subgrupo == 'Hamburguer' %}selected{% endif %}>Hamburguer</option>
-                        <option value="Passaportes"     {% if p.subgrupo == 'Passaportes' %}selected{% endif %}>Passaportes</option>
-                        <option value="Sanduiches"      {% if p.subgrupo == 'Sanduiches' %}selected{% endif %}>Sanduiches</option>
-                        <option value="Pasteis"        {% if p.subgrupo == 'Pasteis' %}selected{% endif %}>Pasteis</option>
-                        <option value="Salgados"       {% if p.subgrupo == 'Salgados' %}selected{% endif %}>Salgados</option>
+                        <option value="Cestas Personalizadas"   {% if p.subgrupo == 'Cestas Personalizadas' %}selected{% endif %}>Cestas Personalizadas</option>
+                        <option value="Mimos Personalizados" {% if p.subgrupo == 'Mimos Personalizados' %}selected{% endif %}>Mimos Personalizados</option>
+                        <option value="Buquê com Rosa de Cetim" {% if p.subgrupo == 'Buquê com Rosa de Cetim' %}selected{% endif %}>Buquê com Rosa de Cetim</option>
+                        <option value="Buquê de borboletas" {% if p.subgrupo == 'Buquê de borboletas' %}selected{% endif %}>Buquê de borboletas</option>                        
+                        <option value="Pelucias" {% if p.subgrupo == 'Pelucias' %}selected{% endif %}>Pelucias</option>
+                        <option value="Chocolates" {% if p.subgrupo == 'Chocolates' %}selected{% endif %}>Chocolates</option>
+                        <option value="Outros" {% if p.subgrupo == 'Outros' %}selected{% endif %}>Outros</option>
                         
                     </select>
                 </div>
@@ -680,6 +669,7 @@
                         <option value="Promoção da casa" {% if p.status_promocao == 'Promoção da casa' %}selected{% endif %}>Promoção da casa</option>
                         <option value="Black Friday"     {% if p.status_promocao == 'Black Friday' %}selected{% endif %}>Black Friday</option>
                         <option value="Sem promoção"     {% if p.status_promocao == 'Sem promoção' %}selected{% endif %}>Sem promoção</option>
+                        <option value="Promoção do Aniversariante" {% if p.status_promocao == 'Promoção do Aniversariante' %}selected{% endif %}>Promoção do Aniversariante</option>
                     </select>
                 </div>
             </div>
@@ -722,9 +712,9 @@
     overlay.addEventListener('click', closeSidebar);
 
     /* ── Drawer do formulário ──────────────────────────────────────
-       Solução definitiva: painel que desliza pela DIREITA.
-       Nunca fica sobreposto pela sidebar (que fica à esquerda).
-       Funciona em qualquer largura de tela.
+    Solução definitiva: painel que desliza pela DIREITA.
+    Nunca fica sobreposto pela sidebar (que fica à esquerda).
+    Funciona em qualquer largura de tela.
     ── */
     const drawer   = document.getElementById('formDrawer');
     const backdrop = document.getElementById('drawerBackdrop');
