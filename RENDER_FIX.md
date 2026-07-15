@@ -48,8 +48,8 @@ git push origin main
 ### 3. Dados de Conexão (manter no .env ou variáveis do Render)
 Já estão em `app/config.py`:
 - Host: auth-db1937.hstgr.io
-- Database: u799109175_menu_prod
-- User: u799109175_menu_prod
+- Database: u799109175_cestas_present
+- User: u799109175_cestas_present
 
 ## Testes Locais
 ```bash

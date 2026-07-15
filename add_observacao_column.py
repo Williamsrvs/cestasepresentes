@@ -14,7 +14,7 @@ config = {
     'host': 'localhost',
     'user': 'root',
     'password': '',
-    'database': 'u799109175_menu_prod'
+    'database': 'u799109175_cestas_present'
 }
 
 try:

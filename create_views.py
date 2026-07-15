@@ -9,9 +9,9 @@ from mysql.connector import Error
 
 db_config = {
     'host': 'auth-db1937.hstgr.io',
-    'user': 'u799109175_menu_prod',
+    'user': 'u799109175_cestas_present',
     'password': 'Q1k2v1y5@2025',  
-    'database': 'u799109175_menu_prod',  
+    'database': 'u799109175_cestas_present',  
     'port': 3306
 }
 
@@ -41,7 +41,7 @@ def main():
         
         # VIEW 1: vw_pedidos_fin
         sql1 = """
-        CREATE OR REPLACE VIEW u799109175_menu_prod.vw_pedidos_fin AS
+        CREATE OR REPLACE VIEW u799109175_cestas_present.vw_pedidos_fin AS
         SELECT
             pe.id_pedido,
             pr.nome_prod,
@@ -51,8 +51,8 @@ def main():
             pe.nome_cliente,
             pe.telefone,
             pe.dt_registro
-        FROM u799109175_menu_prod.tbl_detalhes_pedido pe
-        INNER JOIN u799109175_menu_prod.tbl_prod pr 
+        FROM u799109175_cestas_present.tbl_detalhes_pedido pe
+        INNER JOIN u799109175_cestas_present.tbl_prod pr 
             ON pr.id_prod = pe.id_prod
         ORDER BY pe.dt_registro DESC
         """
@@ -60,7 +60,7 @@ def main():
         
         # VIEW 2: vw_resumo_pedidos_cliente
         sql2 = """
-        CREATE OR REPLACE VIEW u799109175_menu_prod.vw_resumo_pedidos_cliente AS
+        CREATE OR REPLACE VIEW u799109175_cestas_present.vw_resumo_pedidos_cliente AS
         SELECT
             pe.nome_cliente,
             pe.telefone,
@@ -69,7 +69,7 @@ def main():
             SUM(pe.quantidade) AS quantidade_total,
             SUM(pe.valor_total) AS valor_total_cliente,
             MAX(pe.dt_registro) AS ultimo_pedido
-        FROM u799109175_menu_prod.tbl_detalhes_pedido pe
+        FROM u799109175_cestas_present.tbl_detalhes_pedido pe
         GROUP BY pe.nome_cliente, pe.telefone
         ORDER BY SUM(pe.valor_total) DESC
         """
@@ -77,7 +77,7 @@ def main():
         
         # VIEW 3: vw_pedidos_detalhado
         sql3 = """
-        CREATE OR REPLACE VIEW u799109175_menu_prod.vw_pedidos_detalhado AS
+        CREATE OR REPLACE VIEW u799109175_cestas_present.vw_pedidos_detalhado AS
         SELECT
             pe.id_pedido,
             pe.id_detalhe,
@@ -90,10 +90,10 @@ def main():
             pe.telefone,
             pe.dt_registro,
             ped.status_pedido
-        FROM u799109175_menu_prod.tbl_detalhes_pedido pe
-        INNER JOIN u799109175_menu_prod.tbl_prod pr 
+        FROM u799109175_cestas_present.tbl_detalhes_pedido pe
+        INNER JOIN u799109175_cestas_present.tbl_prod pr 
             ON pr.id_prod = pe.id_prod
-        INNER JOIN u799109175_menu_prod.tbl_pedidos ped
+        INNER JOIN u799109175_cestas_present.tbl_pedidos ped
             ON ped.id_pedido = pe.id_pedido
         ORDER BY pe.dt_registro DESC
         """

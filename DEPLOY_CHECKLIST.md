@@ -10,7 +10,7 @@
 
 ### 🗄️ Banco de Dados
 - [ ] MySQL/MariaDB instalado e rodando
-- [ ] Database `u799109175_menu_prod` criado
+- [ ] Database `u799109175_cestas_present` criado
 - [ ] Schema aplicado: `mysql < app/schema.sql`
 - [ ] Views criadas: `python create_views.py`
 - [ ] Backup do banco realizado

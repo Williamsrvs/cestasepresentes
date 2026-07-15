@@ -88,8 +88,8 @@
     ✅ Socket de conexão ................. FUNCIONAL
 
     Autenticação:
-    ✅ Usuário u799109175_menu_prod ...... OK
-    ✅ Banco u799109175_menu_prod ........ EXISTE
+    ✅ Usuário u799109175_cestas_present ...... OK
+    ✅ Banco u799109175_cestas_present ........ EXISTE
     ✅ Tabelas presentes ................. 10 ENCONTRADAS
 
     Bibliotecas:

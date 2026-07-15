@@ -12,9 +12,9 @@ import sys
 # Configuração do banco de dados
 db_config = {
     'host': 'auth-db1937.hstgr.io',
-    'user': 'u799109175_menu_prod',
+    'user': 'u799109175_cestas_present',
     'password': 'Q1k2v1y5@2025',  
-    'database': 'u799109175_menu_prod',  
+    'database': 'u799109175_cestas_present',  
     'port': 3306
 }
 
@@ -32,7 +32,7 @@ def conectar_banco():
 def verificar_colunas(cursor):
     """Verifica quais colunas existem na tabela tbl_pedidos"""
     try:
-        cursor.execute("DESCRIBE u799109175_menu_prod.tbl_pedidos;")
+        cursor.execute("DESCRIBE u799109175_cestas_present.tbl_pedidos;")
         colunas = cursor.fetchall()
         nomes_colunas = [col[0] for col in colunas]
         
@@ -49,7 +49,7 @@ def adicionar_coluna(cursor, nome_coluna, definicao):
     """Adiciona uma coluna à tabela se ela não existir"""
     try:
         cursor.execute(f"""
-            ALTER TABLE u799109175_menu_prod.tbl_pedidos
+            ALTER TABLE u799109175_cestas_present.tbl_pedidos
             ADD COLUMN {nome_coluna} {definicao}
         """)
         print(f"✅ Coluna '{nome_coluna}' adicionada com sucesso!")

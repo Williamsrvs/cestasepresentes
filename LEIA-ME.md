@@ -201,9 +201,9 @@ FLASK_PORT=5000
 # 🗄️ BANCO DE DADOS
 MYSQL_HOST=auth-db1937.hstgr.io
 MYSQL_PORT=3306
-MYSQL_USER=u799109175_menu_prod
+MYSQL_USER=u799109175_cestas_present
 MYSQL_PASSWORD=Q1k2v1y5@2025
-MYSQL_DB=u799109175_menu_prod
+MYSQL_DB=u799109175_cestas_present
 
 # 🔑 SEGURANÇA
 SECRET_KEY=sua-chave-super-secreta-aqui

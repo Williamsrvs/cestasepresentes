@@ -71,9 +71,9 @@ A aplicação agora usará:
 
 As variáveis de ambiente são configuradas no painel do Render:
 - `MYSQL_HOST=auth-db1937.hstgr.io`
-- `MYSQL_USER=u799109175_menu_prod`
+- `MYSQL_USER=u799109175_cestas_present`
 - `MYSQL_PASSWORD=Q1k2v1y5@2025`
-- `MYSQL_DB=u799109175_menu_prod`
+- `MYSQL_DB=u799109175_cestas_present`
 - `MYSQL_PORT=3306`
 - `FLASK_ENV=production`
 
