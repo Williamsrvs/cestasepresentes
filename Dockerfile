@@ -30,5 +30,7 @@ EXPOSE 5000
 ENV FLASK_APP=app.py
 ENV FLASK_ENV=production
 
-# Iniciar aplicação
-CMD ["python", "app.py"]
+# Iniciar aplicação em produção com Gunicorn (servidor WSGI multi-worker).
+# O servidor de desenvolvimento do Flask (`python app.py`) não é adequado
+# para produção e não mantém conexões estáveis sob carga.
+CMD ["gunicorn", "--workers=4", "--worker-class=sync", "--bind=0.0.0.0:5000", "--timeout=120", "--access-logfile=-", "--error-logfile=-", "wsgi:app"]

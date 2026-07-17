@@ -2,7 +2,20 @@
 # -*- coding: utf-8 -*-
 """
 Arquivo principal da aplicação Flask
-Point of entry para executar o servidor
+
+⚠️  APENAS PARA DESENVOLVIMENTO LOCAL ⚠️
+Este arquivo utiliza o servidor de desenvolvimento embutido do Flask
+(`app.run()`), que não é adequado para produção: ele não é otimizado
+para lidar com múltiplas conexões concorrentes e pode ficar indisponível
+sob carga real.
+
+Em produção (Railway), a aplicação deve ser iniciada com Gunicorn,
+apontando para `wsgi:app`, por exemplo:
+
+    gunicorn --workers=4 --worker-class=sync --bind=0.0.0.0:5000 \
+        --timeout=120 --access-logfile=- --error-logfile=- wsgi:app
+
+Para rodar localmente, basta executar: `python3 app.py`
 """
 
 import os
@@ -23,6 +36,9 @@ def iniciar_setup_em_segundo_plano():
 
 
 if __name__ == '__main__':
+    # Bloco executado somente quando rodado diretamente (desenvolvimento local).
+    # Em produção, o Gunicorn importa `wsgi:app` e este bloco nunca é executado.
+
     # Criar tabelas em segundo plano para não travar a subida do servidor
     threading.Thread(target=iniciar_setup_em_segundo_plano, daemon=True).start()
     
