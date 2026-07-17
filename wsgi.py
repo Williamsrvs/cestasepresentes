@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-WSGI entry point para produção
-Use com Gunicorn: gunicorn wsgi:app
+Entry point WSGI para produção.
+
+Este módulo expõe a instância da aplicação Flask (`app`) para que
+servidores WSGI de produção, como o Gunicorn, consigam carregá-la.
+
+Em produção, o servidor deve ser iniciado com Gunicorn, por exemplo:
+
+    gunicorn --workers=4 --worker-class=sync --bind=0.0.0.0:5000 \
+        --timeout=120 --access-logfile=- --error-logfile=- wsgi:app
+
+Não execute este arquivo diretamente. Para desenvolvimento local,
+utilize `python3 app.py`.
 """
 
-import sys
-import os
-
-# Adicionar o diretório app ao path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'app'))
-
-from routes import app
-
-if __name__ == "__main__":
-    app.run()
+from app.routes import app
