@@ -55,6 +55,9 @@ class MySQLConnection:
                 password=db_config['password'],
                 database=db_config['database'],
                 port=db_config['port'],
+                connection_timeout=Config.MYSQL_CONNECT_TIMEOUT,
+                read_timeout=Config.MYSQL_READ_TIMEOUT,
+                write_timeout=Config.MYSQL_WRITE_TIMEOUT,
                 autocommit=False
             )
             return conn

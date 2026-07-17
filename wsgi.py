@@ -14,4 +14,6 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'app'))
 from routes import app
 
 if __name__ == "__main__":
-    app.run()
+    host = os.getenv('FLASK_HOST', '0.0.0.0')
+    port = int(os.getenv('FLASK_PORT', '5000'))
+    app.run(host=host, port=port)
