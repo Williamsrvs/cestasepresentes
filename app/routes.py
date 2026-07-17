@@ -1,4 +1,4 @@
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from flask import Flask, render_template, request, jsonify, redirect, url_for
 from config import Config
 import logging
@@ -20,8 +20,8 @@ from urllib.parse import quote
 
 # Configuração de logging   
 logging.basicConfig(
-    level=logging.INFO,
-    filename='app_errors.log',
+    level=getattr(logging, Config.LOG_LEVEL, logging.INFO),
+    filename=Config.LOG_FILE,
     format='%(asctime)s - %(levelname)s - %(message)s'
 )
 
@@ -29,6 +29,12 @@ app = Flask(__name__)
 
 # ✅ Carrega TODAS as configurações do Config automaticamente
 app.config.from_object(Config)
+app.config.update(
+    SESSION_COOKIE_HTTPONLY=Config.SESSION_COOKIE_HTTPONLY,
+    SESSION_COOKIE_SECURE=Config.SESSION_COOKIE_SECURE,
+    SESSION_COOKIE_SAMESITE=Config.SESSION_COOKIE_SAMESITE,
+    PERMANENT_SESSION_LIFETIME=Config.PERMANENT_SESSION_LIFETIME
+)
 
 # Filtro para converter bytes em base64 para exibir imagens
 @app.template_filter('b64encode')
@@ -1629,8 +1635,6 @@ def atualizar_status_pedido():
 
 @app.route('/dashboard',methods=['GET'])
 def dashboard():
-# Renderiza a página do dashboard
+
     return render_template('dashboard.html')
 
-# A execução da aplicação é controlada pelo entrypoint app.py
-# para evitar problemas de carregamento de ambiente em diferentes contextos.

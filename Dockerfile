@@ -27,8 +27,8 @@ RUN mkdir -p app/static/uploads && chmod 755 app/static/uploads
 EXPOSE 5000
 
 # Variáveis de ambiente
-ENV FLASK_APP=app.py
+ENV PYTHONUNBUFFERED=1
 ENV FLASK_ENV=production
 
 # Iniciar aplicação
-CMD ["python", "app.py"]
+CMD ["gunicorn", "wsgi:app", "--bind", "0.0.0.0:5000", "--workers", "2"]

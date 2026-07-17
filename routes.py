@@ -1,16 +1,14 @@
 from datetime import datetime, date
 from flask import Flask, render_template, request, jsonify, redirect, url_for
 from config import Config
-from flask_mysqldb import MySQL
 import logging
 import os
+import threading
 import mysql.connector as mysql_conn
-from config import db_config
 import openpyxl
 from io import BytesIO
 import xlsxwriter
 from flask import send_file
-from MySQLdb.cursors import DictCursor
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -32,6 +30,62 @@ app = Flask(__name__)
 # ✅ Carrega TODAS as configurações do Config automaticamente
 app.config.from_object(Config)
 
+class MySQL:
+    def __init__(self, app=None):
+        self.app = app
+        self._local = threading.local()
+
+    def _new_connection(self):
+        try:
+            conn = mysql_conn.connect(
+                host=Config.MYSQL_HOST,
+                user=Config.MYSQL_USER,
+                password=Config.MYSQL_PASSWORD,
+                database=Config.MYSQL_DB,
+                port=Config.MYSQL_PORT,
+                autocommit=False
+            )
+            return conn
+        except mysql_conn.Error as e:
+            logging.error(f"❌ Falha ao conectar ao MySQL: {e}")
+            raise
+
+    @property
+    def connection(self):
+        conn = getattr(self._local, 'connection', None)
+        if conn is None or not conn.is_connected():
+            conn = self._new_connection()
+            self._local.connection = conn
+        return conn
+
+    def commit(self):
+        try:
+            self.connection.commit()
+        except Exception as e:
+            logging.error(f"❌ Falha ao commitar no MySQL: {e}")
+            raise
+
+    def rollback(self):
+        conn = getattr(self._local, 'connection', None)
+        if conn is not None and conn.is_connected():
+            try:
+                conn.rollback()
+            except Exception as e:
+                logging.error(f"❌ Falha ao rollback no MySQL: {e}")
+                raise
+
+    def close(self):
+        conn = getattr(self._local, 'connection', None)
+        if conn is not None:
+            try:
+                conn.close()
+            except Exception as e:
+                logging.error(f"❌ Falha ao fechar conexão MySQL: {e}")
+            finally:
+                self._local.connection = None
+
+mysql = MySQL(app)
+
 # Filtro para converter bytes em base64 para exibir imagens
 @app.template_filter('b64encode')
 def b64encode_filter(data):
@@ -40,12 +94,6 @@ def b64encode_filter(data):
     import base64
     return base64.b64encode(data).decode('utf-8')
 
-# Inicializa MySQL do Flask-MySQLdb
-mysql = MySQL(app)  # ← VOLTOU PARA O NOME ORIGINAL!
-
-# Log ao iniciar
-logging.info("🚀 Aplicação iniciando...")
-logging.info(f"📡 Conectando em: {Config.MYSQL_HOST}")
 logging.info(f"👤 Usuário: {Config.MYSQL_USER}")
 logging.info(f"🗄️  Database: {Config.MYSQL_DB}")
 
@@ -583,34 +631,6 @@ def contato():
                                 erro="Erro ao enviar mensagem. Tente novamente.")
     
     return render_template('contato.html')
-if __name__ == '__main__':
-    print("\n" + "="*50)
-    print("🚀 SERVICE TOUR - Iniciando servidor...")
-    print("="*50)
-
-    import socket
-    local_ip = socket.gethostbyname(socket.gethostname())
-
-    print(f"📍 Servidor local: http://127.0.0.1:5000")
-    print(f"📍 Servidor LAN: http://{local_ip}:5000")
-    print("="*50 + "\n")
-
-    try:
-        # Testa conexão antes de iniciar
-        with app.app_context():
-            cur = mysql.connection.cursor()
-            cur.execute("SELECT DATABASE(), VERSION()")
-            db, version = cur.fetchone()
-            cur.close()
-            print(f"✅ Conectado ao banco: {db}")
-            print(f"✅ Versão MySQL: {version}\n")
-        # Chama função para criar/verificar tabelas
-        criar_tabelas()
-    except Exception as e:
-        print(f"⚠️  Aviso: Não foi possível conectar ao banco: {e}\n")
-
-
-from datetime import datetime
 
 @app.route('/ger_clientes', methods=['GET', 'POST'])
 def ger_clientes():
@@ -1219,7 +1239,7 @@ def pedidos_excel_clientes():
 
 @app.route('/subgrupo/<string:subgrupo>', methods=['GET'])
 def grupo(subgrupo):
-    cur = mysql.connection.cursor(DictCursor)
+    cur = mysql.connection.cursor(dictionary=True)
     try:
         # Buscar produtos do subgrupo selecionado
         cur.execute("SELECT * FROM tbl_prod WHERE subgrupo = %s AND ativo = 1 ORDER BY created_at DESC", (subgrupo,))
@@ -1240,7 +1260,3 @@ def grupo(subgrupo):
             cur.close()
 
     return render_template('index.html', produtos=produtos, subgrupos=subgrupos, subgrupo_selecionado=subgrupo)
-
-
-# Permite acesso por IP local da rede
-app.run(host='0.0.0.0', port=5000, debug=True, use_reloader=True)

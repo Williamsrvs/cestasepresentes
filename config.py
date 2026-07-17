@@ -1,33 +1,39 @@
+import os
+from pathlib import Path
+from dotenv import load_dotenv
 
+# Carrega variáveis de ambiente do arquivo .env, se existir
+env_path = Path(__file__).resolve().parent.parent / '.env'
+if env_path.exists():
+    load_dotenv(env_path)
+
+# Configuração do banco de dados via variáveis de ambiente
 db_config = {
-    'host': 'auth-db1937.hstgr.io',
-    'user': 'u799109175_cestas_present',
-    'password': 'Q1k2v1y5@2025',  
-    'database': 'u799109175_cestas_present',  
-    'port': 3306
+    'host': os.getenv('MYSQL_HOST', 'localhost'),
+    'user': os.getenv('MYSQL_USER', 'root'),
+    'password': os.getenv('MYSQL_PASSWORD', ''),
+    'database': os.getenv('MYSQL_DB', 'catalogo_digital'),
+    'port': int(os.getenv('MYSQL_PORT', '3306'))
 }
-class Config:
-    # ✅ REMOVIDA A BARRA NO FINAL
-    MYSQL_HOST = 'auth-db1937.hstgr.io'
-    MYSQL_USER = 'u799109175_cestas_present'
-    MYSQL_PASSWORD = 'Q1k2v1y5@2025'
-    MYSQL_DB = 'u799109175_cestas_present'
-    MYSQL_PORT = 3306
 
-    # Configurações específicas do Flask-MySQLdb
-    MYSQL_CURSORCLASS = 'DictCursor'
-    MYSQL_CONNECT_TIMEOUT = 60
-    MYSQL_READ_TIMEOUT = 60
-    MYSQL_WRITE_TIMEOUT = 60
-    
-    # Configurações SSL (se necessário)
-    # MYSQL_SSL_DISABLED = False
-    # MYSQL_SSL_CA = None
-    # MYSQL_SSL_CERT = None
-    # MYSQL_SSL_KEY = None
-    
-    # Configurações do Flask
-    SECRET_KEY = 'Q1k2v1y5@2025-service-tour'
-    DEBUG = True
-    UPLOAD_FOLDER = 'static/uploads'
-    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
+class Config:
+    MYSQL_HOST = os.getenv('MYSQL_HOST', 'localhost')
+    MYSQL_USER = os.getenv('MYSQL_USER', 'root')
+    MYSQL_PASSWORD = os.getenv('MYSQL_PASSWORD', '')
+    MYSQL_DB = os.getenv('MYSQL_DB', 'catalogo_digital')
+    MYSQL_PORT = int(os.getenv('MYSQL_PORT', '3306'))
+
+    MYSQL_CONNECT_TIMEOUT = int(os.getenv('MYSQL_CONNECT_TIMEOUT', '60'))
+    MYSQL_READ_TIMEOUT = int(os.getenv('MYSQL_READ_TIMEOUT', '60'))
+    MYSQL_WRITE_TIMEOUT = int(os.getenv('MYSQL_WRITE_TIMEOUT', '60'))
+
+    SECRET_KEY = os.getenv('SECRET_KEY', 'change-me-to-a-secure-key')
+    DEBUG = os.getenv('FLASK_ENV', 'development') == 'development'
+    UPLOAD_FOLDER = os.getenv('UPLOAD_FOLDER', 'static/uploads')
+    ALLOWED_EXTENSIONS = set(os.getenv('ALLOWED_EXTENSIONS', 'png,jpg,jpeg').split(','))
+    WHATSAPP_LOJISTA = os.getenv('WHATSAPP_LOJISTA', '')
+    LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO')
+    LOG_FILE = os.getenv('LOG_FILE', 'app_errors.log')
+
+    if os.getenv('FLASK_ENV', 'production') == 'production' and SECRET_KEY == 'change-me-to-a-secure-key':
+        raise ValueError('SECRET_KEY deve ser definida em produção!')
