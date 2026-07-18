@@ -194,7 +194,7 @@ def login():
         senha_usuario = request.form.get('senha_usuario', '').strip()
 
         # 🔹 LOGIN FIXO (ADMIN) — opcional
-        if nome_usuario == 'admin' and senha_usuario == '220485':
+        if nome_usuario == 'Cestasepresentes' and senha_usuario == '140311':
             logging.info(f"✅ Login admin realizado: {nome_usuario}")
             return redirect(url_for('lojista'))  # ou lojista
         
