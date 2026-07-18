@@ -45,7 +45,9 @@ wheels/
 .env.*.local
 
 # Arquivos sensíveis
-config.py
+# (usa "/" no início para ignorar SOMENTE o config.py da raiz,
+# sem afetar o app/config.py, que precisa ser versionado)
+/config.py
 credentials.json
 private_key.pem
 
