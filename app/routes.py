@@ -55,9 +55,9 @@ class MySQLConnection:
                 password=db_config['password'],
                 database=db_config['database'],
                 port=db_config['port'],
-                connection_timeout=Config.MYSQL_CONNECT_TIMEOUT,
-                read_timeout=Config.MYSQL_READ_TIMEOUT,
-                write_timeout=Config.MYSQL_WRITE_TIMEOUT,
+                # connection_timeout=Config.MYSQL_CONNECT_TIMEOUT, # Removido por incompatibilidade
+                # read_timeout=Config.MYSQL_READ_TIMEOUT,       # Removido por incompatibilidade
+                # write_timeout=Config.MYSQL_WRITE_TIMEOUT,     # Removido por incompatibilidade
                 autocommit=False
             )
             return conn
@@ -400,7 +400,7 @@ def produto(id_prod=None):
                     return jsonify({"message": "Produto excluído com sucesso"}), 200
                 else:
                     conn.rollback()
-                    return jsonify({"error": "Falha ao excluir o produto"}), 400
+                    return jsonify({"error": "Falha ao excluir the produto"}), 400
                     
             except Exception as delete_error:
                 conn.rollback()
@@ -498,7 +498,6 @@ def produto_excel():
 
         # Escrever cabeçalhos
         worksheet.write_row(0, 0, colunas, header_format)
-
         logging.info("✍️ Cabeçalhos escritos")
 
         # --- LOOP CORRIGIDO ---
@@ -915,7 +914,6 @@ def api_produtos():
         logging.error(f"❌ Erro ao buscar produtos via API: {e}")
         return jsonify({
             "status": "erro",
-            "mensagem": str(e),
             "produtos": []
         }), 500
     finally:
@@ -998,7 +996,7 @@ def salvar_pedido():
 
         # Calcular valor total do pedido
         valor_total = sum(float(item.get('subtotal', 0)) for item in carrinho)
-        
+
         # Inserir pedido principal
         cur.execute("""
             INSERT INTO tbl_pedidos (id_cliente, valor_total, numero_mesa)
@@ -1641,3 +1639,6 @@ def dashboard():
 
     return render_template('dashboard.html')
 
+if __name__ == '__main__':
+    # ✅ Corrigido: Adicionado host='0.0.0.0' para permitir conexões externas (IP da rede)
+    app.run(host='0.0.0.0', port=5000, debug=True)
