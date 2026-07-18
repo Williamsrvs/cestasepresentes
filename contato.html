@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fale Conosco — Pedido Certo</title>
+    <meta name="robots" content="noindex,nofollow">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --primary:       #e85d04;
+            --primary-dark:  #c84e00;
+            --primary-light: #fff1ea;
+            --dark:          #1a1a2e;
+            --surface:       #ffffff;
+            --text:          #1a1a2e;
+            --muted:         #6b7280;
+            --border:        #e5e7eb;
+            --bg:            #f4f6f9;
+            --whatsapp:      #25d366;
+            --instagram:     #e1306c;
+        }
+
+        html, body { height: 100%; font-family: 'Nunito', sans-serif; }
+
+        body {
+            display: flex; flex-direction: column;
+            min-height: 100vh;
+            background: var(--dark);
+        }
+
+        /* ── Fundo animado ── */
+        .bg {
+            position: fixed; inset: 0; z-index: 0;
+            background: var(--dark); overflow: hidden;
+        }
+
+        .bg::before {
+            content: ''; position: absolute; inset: 0;
+            background-image: radial-gradient(circle, rgba(255,255,255,.065) 1px, transparent 1px);
+            background-size: 36px 36px;
+        }
+
+        .blob {
+            position: absolute; border-radius: 50%;
+            filter: blur(90px); opacity: .38;
+            animation: drift 14s ease-in-out infinite alternate;
+        }
+
+        .blob-1 {
+            width: 520px; height: 520px;
+            background: radial-gradient(circle, #e85d04 0%, transparent 70%);
+            top: -140px; left: -120px; animation-delay: 0s;
+        }
+
+        .blob-2 {
+            width: 380px; height: 380px;
+            background: radial-gradient(circle, #ff8c42 0%, transparent 70%);
+            bottom: -80px; right: -80px; animation-delay: -7s;
+        }
+
+        .blob-3 {
+            width: 260px; height: 260px;
+            background: radial-gradient(circle, #c84e00 0%, transparent 70%);
+            top: 50%; left: 58%; animation-delay: -4s;
+        }
+
+        @keyframes drift {
+            from { transform: translate(0,0) scale(1); }
+            to   { transform: translate(28px,18px) scale(1.08); }
+        }
+
+        /* ── Main ── */
+        main {
+            flex: 1; position: relative; z-index: 1;
+            display: flex; align-items: center; justify-content: center;
+            padding: 32px 24px;
+        }
+
+        /* ── Wrapper ── */
+        .wrapper {
+            display: flex; width: 100%; max-width: 920px;
+            min-height: 560px; border-radius: 22px; overflow: hidden;
+            box-shadow: 0 32px 80px rgba(0,0,0,.55),
+                        0 0 0 1px rgba(255,255,255,.06);
+            animation: cardIn .55s cubic-bezier(.22,.68,0,1.2) both;
+        }
+
+        @keyframes cardIn {
+            from { opacity: 0; transform: translateY(28px) scale(.97); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* ── Painel esquerdo — brand ── */
+        .panel-brand {
+            width: 42%;
+            background: var(--primary);
+            background-image:
+                radial-gradient(circle at 30% 30%, rgba(255,255,255,.13), transparent 60%),
+                radial-gradient(circle at 80% 80%, rgba(0,0,0,.18), transparent 60%);
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            padding: 48px 32px; position: relative; overflow: hidden; gap: 26px;
+        }
+
+        .panel-brand::before {
+            content: ''; position: absolute; inset: 0;
+            background-image: repeating-linear-gradient(
+                45deg,
+                rgba(255,255,255,.04) 0px, rgba(255,255,255,.04) 1px,
+                transparent 1px, transparent 28px
+            );
+        }
+
+        .brand-logo {
+            width: 148px; position: relative;
+            filter: brightness(0) invert(1); opacity: .95;
+            animation: fadeUp .6s .2s both ease;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(14px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .brand-tagline {
+            position: relative; text-align: center;
+            animation: fadeUp .6s .35s both ease;
+        }
+
+        .brand-tagline h2 {
+            font-size: 21px; font-weight: 900;
+            color: #fff; line-height: 1.25; margin-bottom: 8px;
+        }
+
+        .brand-tagline p {
+            font-size: 13px; color: rgba(255,255,255,.78);
+            line-height: 1.55; font-weight: 500;
+        }
+
+        /* Canais de contato direto no painel */
+        .contact-channels {
+            display: flex; flex-direction: column; gap: 10px; width: 100%;
+            position: relative; animation: fadeUp .6s .5s both ease;
+        }
+
+        .channel {
+            display: flex; align-items: center; gap: 11px;
+            background: rgba(255,255,255,.12);
+            border: 1px solid rgba(255,255,255,.2);
+            border-radius: 11px; padding: 11px 14px;
+            text-decoration: none;
+            transition: background .22s, transform .15s;
+        }
+
+        .channel:hover { background: rgba(255,255,255,.2); transform: translateX(4px); }
+
+        .channel-icon {
+            width: 34px; height: 34px; border-radius: 9px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 17px; flex-shrink: 0;
+        }
+
+        .channel-icon.wpp   { background: rgba(37,211,102,.25); }
+        .channel-icon.ig    { background: rgba(225,48,108,.25); }
+        .channel-icon.surv  { background: rgba(255,215,0,.2); }
+
+        .channel-text { flex: 1; }
+        .channel-text strong {
+            display: block; font-size: 13px; font-weight: 800;
+            color: #fff; line-height: 1.2;
+        }
+        .channel-text span {
+            font-size: 11px; color: rgba(255,255,255,.65); font-weight: 600;
+        }
+
+        .channel-arrow {
+            font-size: 13px; color: rgba(255,255,255,.45); flex-shrink: 0;
+        }
+
+        /* ── Painel direito — formulário ── */
+        .panel-form {
+            flex: 1; background: var(--surface);
+            display: flex; flex-direction: column; justify-content: center;
+            padding: 52px 44px;
+        }
+
+        .form-header { margin-bottom: 28px; }
+
+        .form-header .label {
+            font-size: 11px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: .12em; color: var(--primary); margin-bottom: 6px;
+        }
+
+        .form-header h1 {
+            font-size: 26px; font-weight: 900; color: var(--text); line-height: 1.2;
+        }
+
+        .form-header p {
+            font-size: 13px; color: var(--muted); margin-top: 6px; font-weight: 500;
+        }
+
+        /* Flash / success */
+        .alert {
+            border-radius: 9px; padding: 11px 14px;
+            font-size: 13px; font-weight: 700; margin-bottom: 18px;
+            display: flex; align-items: center; gap: 8px;
+        }
+
+        .alert.success { background: #f0fdf4; border: 1.5px solid #86efac; color: #16a34a; }
+        .alert.error   { background: #fef2f2; border: 1.5px solid #fca5a5; color: #dc2626; }
+
+        /* Fields */
+        .field { margin-bottom: 16px; }
+
+        .field label {
+            display: block; font-size: 11px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: .06em;
+            color: var(--muted); margin-bottom: 5px;
+        }
+
+        .input-wrap { position: relative; }
+
+        .input-wrap .icon {
+            position: absolute; left: 13px; top: 14px;
+            font-size: 15px; pointer-events: none;
+        }
+
+        .input-wrap.icon-center .icon {
+            top: 50%; transform: translateY(-50%);
+        }
+
+        .input-wrap input,
+        .input-wrap textarea {
+            width: 100%; padding: 10px 13px 10px 40px;
+            border: 1.5px solid var(--border); border-radius: 10px;
+            font-family: inherit; font-size: 14px; font-weight: 600;
+            color: var(--text); background: var(--bg); outline: none;
+            transition: border-color .22s, box-shadow .22s, background .22s;
+        }
+
+        .input-wrap input::placeholder,
+        .input-wrap textarea::placeholder { color: #b5bec9; font-weight: 500; }
+
+        .input-wrap input:focus,
+        .input-wrap textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(232,93,4,.12);
+            background: #fff;
+        }
+
+        .input-wrap textarea {
+            resize: vertical; min-height: 110px; padding-top: 12px;
+        }
+
+        /* Contador de caracteres */
+        .char-count {
+            font-size: 11px; color: var(--muted); font-weight: 600;
+            text-align: right; margin-top: 4px;
+        }
+
+        .char-count.near   { color: #f97316; }
+        .char-count.limit  { color: #ef4444; }
+
+        /* Form grid */
+        .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+        /* Botões */
+        .btn-submit {
+            width: 100%; padding: 13px;
+            background: var(--primary); color: #fff;
+            border: none; border-radius: 10px;
+            font-family: inherit; font-size: 15px; font-weight: 800;
+            cursor: pointer; margin-top: 6px;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            transition: background .22s, transform .12s, box-shadow .22s;
+            box-shadow: 0 4px 14px rgba(232,93,4,.38);
+            position: relative; overflow: hidden;
+        }
+
+        .btn-submit::after {
+            content: ''; position: absolute; inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,.12) 0%, transparent 60%);
+            pointer-events: none;
+        }
+
+        .btn-submit:hover {
+            background: var(--primary-dark); transform: translateY(-1px);
+            box-shadow: 0 8px 22px rgba(232,93,4,.48);
+        }
+
+        .btn-submit:active { transform: translateY(0); }
+
+        .btn-submit.sending { opacity: .7; pointer-events: none; }
+
+        .divider {
+            display: flex; align-items: center; gap: 12px; margin: 14px 0;
+        }
+        .divider::before, .divider::after {
+            content: ''; flex: 1; height: 1px; background: var(--border);
+        }
+        .divider span { font-size: 11px; color: var(--muted); font-weight: 700; }
+
+        .btn-back {
+            width: 100%; padding: 11px;
+            background: transparent; color: var(--muted);
+            border: 1.5px solid var(--border); border-radius: 10px;
+            font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            transition: border-color .22s, color .22s, background .22s;
+        }
+
+        .btn-back:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+
+        /* ── Footer ── */
+        footer {
+            position: relative; z-index: 1; text-align: center;
+            padding: 16px; font-size: 12px; font-weight: 600;
+            color: rgba(255,255,255,.25);
+        }
+
+        /* ── Floating action buttons (lado direito) ── */
+        .fab-group {
+            position: fixed; bottom: 28px; right: 24px;
+            display: flex; flex-direction: column; gap: 10px;
+            z-index: 200;
+        }
+
+        .fab {
+            display: flex; align-items: center; gap: 9px;
+            padding: 10px 16px; border-radius: 50px;
+            text-decoration: none; font-family: 'Nunito', sans-serif;
+            font-size: 13px; font-weight: 800;
+            box-shadow: 0 4px 16px rgba(0,0,0,.24);
+            transition: transform .18s, box-shadow .22s, filter .22s;
+            white-space: nowrap;
+        }
+
+        .fab:hover { transform: translateY(-2px) scale(1.03); }
+
+        .fab-wpp {
+            background: var(--whatsapp); color: #fff;
+        }
+        .fab-wpp:hover { box-shadow: 0 6px 20px rgba(37,211,102,.45); }
+
+        .fab-ig {
+            background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+            color: #fff;
+        }
+        .fab-ig:hover { box-shadow: 0 6px 20px rgba(188,24,136,.45); }
+
+        .fab-survey {
+            background: linear-gradient(135deg, #ffd700, #ffa500);
+            color: #1a1a2e;
+        }
+        .fab-survey:hover { box-shadow: 0 6px 20px rgba(255,165,0,.45); }
+
+        .fab-icon { font-size: 16px; flex-shrink: 0; }
+
+        /* ── Responsive ── */
+        @media (max-width: 750px) {
+            .wrapper { flex-direction: column; max-width: 460px; min-height: unset; }
+            .panel-brand {
+                width: 100%; min-height: unset; padding: 28px 24px;
+                flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 14px;
+            }
+            .brand-logo { width: 110px; }
+            .brand-tagline h2 { font-size: 16px; }
+            .brand-tagline p  { display: none; }
+            .contact-channels { display: none; }
+            .panel-form { padding: 30px 24px; }
+            .form-header h1 { font-size: 21px; }
+            .form-grid-2 { grid-template-columns: 1fr; }
+            .fab-group { bottom: 16px; right: 14px; }
+        }
+
+        @media (max-width: 420px) {
+            main { padding: 16px; }
+            .panel-form { padding: 24px 18px; }
+            .fab { font-size: 12px; padding: 9px 13px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Fundo animado -->
+<div class="bg">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+</div>
+
+<main>
+    <div class="wrapper">
+
+        <!-- ── Painel esquerdo — brand ── -->
+        <div class="panel-brand">
+
+            <img
+                src="https://raw.githubusercontent.com/Williamsrvs/img_catalogodigital/refs/heads/main/logo%20pedido%20certo.png"
+                alt="Pedido Certo"
+                class="brand-logo">
+
+            <div class="brand-tagline">
+                <h2>Estamos aqui para ajudar você</h2>
+                <p>Envie sua mensagem ou nos encontre nos canais abaixo. Respondemos rapidamente!</p>
+            </div>
+
+            <div class="contact-channels">
+
+                <a href="https://wa.me/5582982149854" class="channel" target="_blank" rel="noopener">
+                    <div class="channel-icon wpp">📲</div>
+                    <div class="channel-text">
+                        <strong>WhatsApp</strong>
+                        <span>Resposta em minutos</span>
+                    </div>
+                    <div class="channel-arrow">›</div>
+                </a>
+
+                <a href="https://www.instagram.com/dateanalytics" class="channel" target="_blank" rel="noopener">
+                    <div class="channel-icon ig">📸</div>
+                    <div class="channel-text">
+                        <strong>Instagram</strong>
+                        <span>@dateanalytics</span>
+                    </div>
+                    <div class="channel-arrow">›</div>
+                </a>
+
+                <a href="/pesquisa" class="channel">
+                    <div class="channel-icon surv">⭐</div>
+                    <div class="channel-text">
+                        <strong>Pesquisa de Satisfação</strong>
+                        <span>Avalie nosso atendimento</span>
+                    </div>
+                    <div class="channel-arrow">›</div>
+                </a>
+
+            </div>
+
+        </div>
+
+        <!-- ── Painel direito — formulário ── -->
+        <div class="panel-form">
+
+            <div class="form-header">
+                <div class="label">Atendimento ao cliente</div>
+                <h1>Fale Conosco</h1>
+                <p>Preencha o formulário e entraremos em contato em breve</p>
+            </div>
+
+            <!-- Alert de sucesso (Flask ou JS) -->
+            <div class="alert success" id="successAlert" style="display:none;">
+                ✅ Mensagem enviada com sucesso! Entraremos em contato em breve.
+            </div>
+
+            <!-- Mensagens Flask -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                <div class="alert {% if category == 'success' %}success{% else %}error{% endif %}">
+                    {% if category == 'success' %}✅{% else %}⚠️{% endif %} {{ message }}
+                </div>
+                {% endfor %}
+            {% endif %}
+            {% endwith %}
+
+            <form id="contactForm" method="POST" action="/contato" novalidate>
+
+                <div class="form-grid-2">
+                    <div class="field">
+                        <label for="nome">Nome Completo</label>
+                        <div class="input-wrap icon-center">
+                            <span class="icon">👤</span>
+                            <input type="text" id="nome" name="nome"
+                                   placeholder="Seu nome" required>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label for="email">E-mail</label>
+                        <div class="input-wrap icon-center">
+                            <span class="icon">✉️</span>
+                            <input type="email" id="email" name="email"
+                                   placeholder="seu@email.com" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label for="assunto">Assunto</label>
+                    <div class="input-wrap icon-center">
+                        <span class="icon">📋</span>
+                        <input type="text" id="assunto" name="assunto"
+                               placeholder="Sobre o que você quer falar?" maxlength="80">
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label for="mensagem">Mensagem</label>
+                    <div class="input-wrap">
+                        <span class="icon">💬</span>
+                        <textarea id="mensagem" name="mensagem"
+                                  placeholder="Digite sua mensagem aqui..."
+                                  maxlength="600" required></textarea>
+                    </div>
+                    <div class="char-count" id="charCount">0 / 600</div>
+                </div>
+
+                <button type="submit" class="btn-submit" id="btnEnviar">
+                    📨 Enviar Mensagem
+                </button>
+
+                <div class="divider"><span>ou</span></div>
+
+                <button type="button" class="btn-back" onclick="window.location.href='/'">
+                    ← Voltar à página inicial
+                </button>
+
+            </form>
+        </div>
+
+    </div>
+</main>
+
+<footer>
+    &copy; 2025 Date Analytics — Todos os direitos reservados
+</footer>
+
+<!-- ── FABs flutuantes ── -->
+<div class="fab-group">
+    <a href="/pesquisa" class="fab fab-survey">
+        <span class="fab-icon">⭐</span> Pesquisa
+    </a>
+    <a href="https://wa.me/5582982149854" class="fab fab-wpp" target="_blank" rel="noopener">
+        <span class="fab-icon">📲</span> WhatsApp
+    </a>
+    <a href="https://www.instagram.com/dateanalytics" class="fab fab-ig" target="_blank" rel="noopener">
+        <span class="fab-icon">📸</span> Instagram
+    </a>
+</div>
+
+<script>
+    /* ── Contador de caracteres da mensagem ── */
+    const textarea  = document.getElementById('mensagem');
+    const charCount = document.getElementById('charCount');
+    const MAX = 600;
+
+    textarea.addEventListener('input', function() {
+        const len = this.value.length;
+        charCount.textContent = `${len} / ${MAX}`;
+        charCount.className = 'char-count';
+        if (len >= MAX * 0.85) charCount.classList.add('near');
+        if (len >= MAX)        charCount.classList.add('limit');
+    });
+
+    /* ── Submit com feedback visual ── */
+    const form       = document.getElementById('contactForm');
+    const btnEnviar  = document.getElementById('btnEnviar');
+    const successAlert = document.getElementById('successAlert');
+
+    form.addEventListener('submit', function(e) {
+        const nome  = document.getElementById('nome').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const msg   = textarea.value.trim();
+
+        if (!nome || !email || !msg) {
+            e.preventDefault();
+            shake();
+            return;
+        }
+
+        btnEnviar.classList.add('sending');
+        btnEnviar.innerHTML = '⏳ Enviando...';
+
+        // Se quiser usar só front-end sem backend, descomente abaixo:
+        // e.preventDefault();
+        // setTimeout(() => {
+        //     successAlert.style.display = 'flex';
+        //     form.reset();
+        //     charCount.textContent = '0 / 600';
+        //     btnEnviar.classList.remove('sending');
+        //     btnEnviar.innerHTML = '📨 Enviar Mensagem';
+        //     setTimeout(() => successAlert.style.display = 'none', 5000);
+        // }, 900);
+    });
+
+    /* ── Shake ── */
+    function shake() {
+        const pf = document.querySelector('.panel-form');
+        pf.style.animation = 'shake .4s ease';
+        setTimeout(() => pf.style.animation = '', 500);
+    }
+
+    const shakeStyle = document.createElement('style');
+    shakeStyle.textContent = `
+        @keyframes shake {
+            0%,100% { transform: translateX(0); }
+            20%      { transform: translateX(-6px); }
+            40%      { transform: translateX(6px); }
+            60%      { transform: translateX(-4px); }
+            80%      { transform: translateX(4px); }
+        }
+    `;
+    document.head.appendChild(shakeStyle);
+</script>
+
+</body>
+</html>
