@@ -23,12 +23,13 @@ COPY . .
 # Criar pasta de uploads
 RUN mkdir -p app/static/uploads && chmod 755 app/static/uploads
 
-# Expor porta
+# Expor porta (documental - a porta real vem de $PORT em tempo de execução)
 EXPOSE 5000
 
 # Variáveis de ambiente
 ENV PYTHONUNBUFFERED=1
 ENV FLASK_ENV=production
 
-# Iniciar aplicação
-CMD ["gunicorn", "wsgi:app", "--bind", "0.0.0.0:5000", "--workers", "2"]
+# Iniciar aplicação - usa a porta dinâmica que o Railway define em $PORT
+# Forma shell (não array) para permitir a expansão da variável de ambiente
+CMD gunicorn wsgi:app --bind 0.0.0.0:${PORT:-5000} --workers 2 --timeout 120
