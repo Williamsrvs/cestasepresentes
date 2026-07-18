@@ -1211,10 +1211,11 @@
                         <input type="text" id="observacao" name="observacao" placeholder="Digite uma observação" >
                     </div>
 
-                    <!-- Taxa de Entrega com destaque visual -->
+                
+                    
                     <div class="form-group">
                         <label>Taxa de Entrega 🚚</label>
-                        <input type="text" id="taxa_entrega" value="R$ 0,00" readonly>
+                        <input type="text" id="taxa_entrega" value="R$ 15,00" enabled readonly>
                     </div>
 
                 </div>
@@ -1467,7 +1468,7 @@
             const tipoConsumo = e.target.value;
             
             if (tipoConsumo === 'Delivery') {
-                taxaEntregaInput.value = 'R$ 6,00';
+                taxaEntregaInput.value = 'R$ 15,00';
                 taxaEntregaInput.classList.add('taxa-entrega-highlight');
                 
                 // Feedback visual
@@ -1757,9 +1758,7 @@
         }
 
         function gerarQRCodePIX(valor) {
-            // Valores para gerar o QR Code PIX (formato Brcode)
-            // Formato simplificado: 00020126580014br.gov.bcb.brcode010521.0.0|chave_pix|...
-            // Para um sistema básico, usaremos a biblioteca QRCode com os dados
+    
             
             const pixData = {
                 chave: CHAVE_PIX,
@@ -1922,7 +1921,7 @@
                     document.getElementById('customerName').value = '';
                     document.getElementById('customerPhone').value = '';
                     document.getElementById('productsList').innerHTML = '';
-                    
+                
                     // Mostrar estado vazio
                     const emptyState = document.createElement('div');
                     emptyState.className = 'empty-products';
@@ -2442,8 +2441,8 @@
         </head>
         <body>
 
-            <h5>Lanchonete Delicia</h5>
-            <h5>📞 (11) 99999-9999</h5>
+            <h5>LP Cestas e Presentes</h5>
+            <h5>📞 (82) 98214-9854</h5>
             <h1>🧾 PEDIDO</h1>
 
             <p><strong>Nº:</strong> ${saveResult.id_pedido}</p>
