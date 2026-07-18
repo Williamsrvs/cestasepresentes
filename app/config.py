@@ -2,6 +2,21 @@ import os
 from datetime import timedelta
 from dotenv import load_dotenv
 
+
+def safe_int(value, default):
+    """Converte valores para inteiro de forma segura, tratando strings vazias,
+    None ou valores invalidos (ex.: variaveis de referencia do Railway que
+    ainda nao foram expandidas)."""
+    if value is None:
+        return default
+    if isinstance(value, str) and value.strip() == '':
+        return default
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return default
+
+
 def carregar_env_robusto(env_path):
     if not os.path.exists(env_path):
         return
@@ -34,7 +49,7 @@ db_config = {
     'user': os.getenv('MYSQL_USER', 'root'),
     'password': os.getenv('MYSQL_PASSWORD', ''),  
     'database': os.getenv('MYSQL_DB', 'catalogo_digital'),  
-    'port': int(os.getenv('MYSQL_PORT', 3306))
+    'port': safe_int(os.getenv('MYSQL_PORT'), 3306)
 }
 
 class Config:
@@ -43,13 +58,13 @@ class Config:
     MYSQL_USER = os.getenv('MYSQL_USER', 'root')
     MYSQL_PASSWORD = os.getenv('MYSQL_PASSWORD', '')
     MYSQL_DB = os.getenv('MYSQL_DB', 'catalogo_digital')
-    MYSQL_PORT = int(os.getenv('MYSQL_PORT', 3306))
+    MYSQL_PORT = safe_int(os.getenv('MYSQL_PORT'), 3306)
 
     # Configurações específicas do MySQL
     MYSQL_CURSORCLASS = 'DictCursor'
-    MYSQL_CONNECT_TIMEOUT = int(os.getenv('MYSQL_CONNECT_TIMEOUT', '60'))
-    MYSQL_READ_TIMEOUT = int(os.getenv('MYSQL_READ_TIMEOUT', '60'))
-    MYSQL_WRITE_TIMEOUT = int(os.getenv('MYSQL_WRITE_TIMEOUT', '60'))
+    MYSQL_CONNECT_TIMEOUT = safe_int(os.getenv('MYSQL_CONNECT_TIMEOUT'), 60)
+    MYSQL_READ_TIMEOUT = safe_int(os.getenv('MYSQL_READ_TIMEOUT'), 60)
+    MYSQL_WRITE_TIMEOUT = safe_int(os.getenv('MYSQL_WRITE_TIMEOUT'), 60)
     
     # Configurações do Flask
     # ✅ Corrigido: Garantindo que sempre haja uma SECRET_KEY para evitar o erro ValueError no Railway
@@ -68,4 +83,4 @@ class Config:
     SESSION_COOKIE_HTTPONLY = os.getenv('SESSION_COOKIE_HTTPONLY', 'True').lower() == 'true'
     SESSION_COOKIE_SECURE = os.getenv('SESSION_COOKIE_SECURE', 'True').lower() == 'true'
     SESSION_COOKIE_SAMESITE = os.getenv('SESSION_COOKIE_SAMESITE', 'Lax')
-    PERMANENT_SESSION_LIFETIME = timedelta(minutes=int(os.getenv('PERMANENT_SESSION_LIFETIME_MINUTES', '30')))
+    PERMANENT_SESSION_LIFETIME = timedelta(minutes=safe_int(os.getenv('PERMANENT_SESSION_LIFETIME_MINUTES'), 30))
