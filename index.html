@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🛍️ Pedido Certo</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    
+    <style>
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            padding: 20px;
+            box-sizing: border-box;
+            animation: fadeInModal 0.2s ease-out;
+        }
+
+        .modal-content {
+            position: relative;
+            max-width: 90vw;
+            max-height: 90vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content img {
+            max-width: 100%;
+            max-height: 90vh;
+            border-radius: 8px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            object-fit: contain;
+        }
+
+        .modal .close {
+            position: absolute;
+            top: -36px;
+            right: -6px;
+            color: #fff;
+            font-size: 32px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
+            user-select: none;
+        }
+
+        body.modal-open {
+            overflow: hidden;
+        }
+
+        @keyframes fadeInModal {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="main-header">
+        <div class="button-container">
+            <a href="/login" class="login-button">🏠 Lojista</a>
+        </div>
+        <div></div> <!-- Spacer -->
+    </header>
+
+    <section class="intro">
+        <h2>Bem-vindo ao Pedido Certo!</h2>
+        <h1> 🎁 LP Cestas e Presentes</h1>
+        <h2>🕜 Aberta todos os dias das: 08:00h às 18:00h</h2>
+        <h2>📞 (82) 98214-9854</h2>
+    </section>
+
+    <div class="select-box">
+        <label for="grupo-select">Filtrar por Categoria</label>
+        <select id="grupo-select" onchange="location = this.value;">
+            <option value="/">Todas as Categorias</option>
+            {% for subgrupo in subgrupos %}
+                <option value="/subgrupo/{{ subgrupo.subgrupo }}" {% if subgrupos_selecionado == subgrupo.subgrupo %}selected{% endif %}>{{ subgrupo.subgrupo }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <nav class="nav-tabs">
+        <ul class="tabs-list">
+            <li class="tab-item"><a href="/">🛖 Início</a></li>
+            <li class="tab-item"><a href="/contato">💬 Fale Conosco</a></li>
+            <li class="tab-item"><a href="/pesquisa" target="_blank">📣 Pesquisa</a></li>
+            <li class="tab-item"><a href="#" onclick="compartilharPagina()">✅ Compartilhar</a></li>
+        </ul>   
+    </nav>
+
+    <main class="main-content">
+        <section class="products-grid">
+            {% if produtos %}
+                {% for p in produtos %}
+                    <div class="product-card">
+                        <div class="product-image">
+                            {% if p.imagem_url %}
+                                <img src="data:image/jpeg;base64,{{ p.imagem_url|b64encode }}" alt="{{ p.nome_prod }}">
+                            {% else %}
+                                <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60" alt="Sem imagem">
+                            {% endif %}
+                        </div>
+                        <div class="product-info">
+                            <h3>{{ p.nome_prod }}</h3>
+                            <div class="divider"></div>
+                            <p><strong>Descrição:</strong> {{ p.descricao or 'Sem descrição disponível.' }}</p>
+                            <p><strong>Categoria:</strong> {{ p.subgrupo }}</p>
+                            {% if p.status_promocao and p.status_promocao != 'Não' %}
+                                <p style="color: #e63946; font-weight: 700;">🔥 {{ p.status_promocao }}</p>
+                            {% endif %}
+                            
+                            <div class="product-price">R$ {{ "%.2f"|format(p.valor|float) }}</div>
+
+                            <div class="order-btn-container">
+                                <a href="/pedidos_cliente">🛒 Fazer Pedido</a>
+                            </div>
+                        </div>  
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p class="no-products">Nenhum produto encontrado nesta categoria.</p>
+            {% endif %}
+        </section>
+    </main>
+
+    <footer class="footer">
+        <p>&copy; 2025 Date Analytics. Todos os direitos reservados.</p>
+    </footer>
+
+    <nav class="nav-tabs">
+        <ul class="tabs-list">
+            <li class="tab-item"><a href="/">🛖 Início</a></li>
+            <li class="tab-item"><a href="/contato">💬 Fale Conosco</a></li>
+            <li class="tab-item"><a href="/pesquisa" target="_blank">📣 Pesquisa</a></li>
+            <li class="tab-item"><a href="#" onclick="compartilharPagina()">✅ Compartilhar</a></li>
+        </ul>   
+    </nav>
+
+    <script>
+        async function compartilharPagina() {
+            try {
+                const url = window.location.href;
+                const title = document.title;
+                
+                if (navigator.share) {
+                    await navigator.share({
+                        title: title,
+                        text: 'Confira nosso cardápio digital!',
+                        url: url
+                    });
+                } else {
+                    const tempInput = document.createElement('input');
+                    tempInput.value = url;
+                    document.body.appendChild(tempInput);
+                    tempInput.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(tempInput);
+                    alert('Link copiado para a área de transferência!');
+                }
+            } catch (error) {
+                console.error('Erro ao compartilhar:', error);
+            }
+        }
+
+        // criando uma função para dar um zoom na imagem da classe product-image
+        const productImages = document.querySelectorAll('.product-image img');
+        productImages.forEach(img => {
+            img.addEventListener('click', () => {
+                const existingModal = document.querySelector('.modal');
+                if (existingModal) {
+                    existingModal.remove();
+                    document.body.classList.remove('modal-open');
+                    return;
+                }
+
+                if (!img.src) {
+                    return;
+                }
+
+                const modal = document.createElement('div');
+                modal.classList.add('modal');
+                modal.innerHTML = `
+                    <div class="modal-content">
+                        <span class="close">&times;</span>
+                        <img src="${img.src}" alt="${img.alt}">
+                    </div>
+                `;
+                document.body.appendChild(modal);
+                document.body.classList.add('modal-open');
+
+                const closeBtn = modal.querySelector('.close');
+                closeBtn.addEventListener('click', () => {
+                    modal.remove();
+                    document.body.classList.remove('modal-open');
+                });
+
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        modal.remove();
+                        document.body.classList.remove('modal-open');
+                    }
+                });
+            });
+        });
+
+    </script>
+</body>
+</html>
