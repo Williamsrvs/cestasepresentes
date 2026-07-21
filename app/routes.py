@@ -1201,7 +1201,7 @@ def ger_pedidos():
                 data_fim = datetime.strptime(data_fim, '%Y-%m-%d').strftime('%d/%m/%Y')
 
 
-            query = """SELECT * FROM vw_pedidos_fin
+            query = """SELECT * FROM tbl_detalhes_pedido
                     where date(dt_registro) <= curdate()
                     
             """  
