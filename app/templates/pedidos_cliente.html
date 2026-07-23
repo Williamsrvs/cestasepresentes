@@ -101,7 +101,7 @@
         .header {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(20px) saturate(180%);
-            padding: 20px 30px;
+            padding: 15px 20px;
             box-shadow: var(--shadow-md);
             position: sticky;
             top: 0;
@@ -200,7 +200,7 @@
             gap: 30px;
             max-width: 1400px;
             width: 100%;
-            margin: 30px auto;
+            margin: 20px auto;
             padding: 0 30px;
             position: relative;
             z-index: 1;
@@ -766,6 +766,73 @@
             display: flex;
             flex-direction: column;
             gap: 24px;
+        }
+
+        /* RESPONSIVIDADE MOBILE */
+        @media (max-width: 992px) {
+            .main-container {
+                flex-direction: column;
+                padding: 0 20px;
+                gap: 24px;
+            }
+
+            .right-panel {
+                width: 100%;
+                position: static;
+            }
+
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+                gap: 15px;
+            }
+
+            h1 {
+                font-size: 26px;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .customer-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .product-fields {
+                grid-template-columns: 1fr;
+            }
+
+            .card {
+                padding: 20px;
+            }
+
+            .total-amount {
+                padding: 30px 20px;
+            }
+
+            .total-amount .amount {
+                font-size: 36px;
+            }
+
+            .action-buttons {
+                grid-template-columns: 1fr;
+            }
+
+            .selected-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .selected-item-price {
+                margin: 0;
+                font-size: 20px;
+            }
+
+            .btn-remove {
+                width: 100%;
+                text-align: center;
+            }
         }
 
         .total-amount {
@@ -1358,18 +1425,18 @@
             </button>
 
             <!-- BOTÕES DE AÇÃO MELHORADOS -->
-            <button class="btn-checkout btn-save-improved" id="salvar_Pedido" disabled>
+            <!--<button class="btn-checkout btn-save-improved" id="salvar_Pedido" enabled>
                 <span class="btn-icon">💾</span>
                 <span class="btn-text">Salvar Pedido</span>
                 <div class="loader-inline" id="save_loader"></div>
-            </button>
+            </button>-->
 
             <!--BOTÃO PAGAR MELHORADO-->
-            <button class="btn-checkout btn-pix-improved" id="pagar_Pedido" enabled>
+            <!--<button class="btn-checkout btn-pix-improved" id="pagar_Pedido" enabled>
                 <span class="btn-icon">💳</span>
                 <span class="btn-text">Pagar com Pix</span>
                 <div class="loader-inline" id="pix_loader"></div>
-            </button>
+            </button>-->
         
         </div>
     </div>
@@ -1429,7 +1496,7 @@
         let carrinho = [];
         let productCounter = 0;
         
-        const WHATSAPP_LOJISTA = '5582982149854';
+        const WHATSAPP_LOJISTA = '5582988663902';
         const CHAVE_PIX = '10139515496';  // 👈 Substitua pela sua chave PIX real (CPF, email, telefone ou chave aleatória)
         const NOME_BENEFICIARIO = 'LUCIENE GOMES DA SILVA';
         const TAXA_ENTREGA = 15.00; // Taxa de entrega fixa
@@ -2442,7 +2509,7 @@
         <body>
 
             <h5>LP Cestas e Presentes</h5>
-            <h5>📞 (82) 98214-9854</h5>
+            <h5>📞 (82) 98866-3902</h5>
             <h1>🧾 PEDIDO</h1>
 
             <p><strong>Nº:</strong> ${saveResult.id_pedido}</p>
