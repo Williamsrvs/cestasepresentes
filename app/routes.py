@@ -936,7 +936,7 @@ def salvar_pedido():
         # O frontend envia como email_cliente e telefone_cliente, mas o BD usa email e telefone
         email = dados.get('email_cliente', dados.get('email', ''))
         telefone = dados.get('telefone_cliente', dados.get('telefone', ''))
-        numero_mesa = dados.get('numero_mesa') or 0  # Se vazio/null, usar 0
+        numero_casa = dados.get('numero_casa') or 0  
         endereco = dados.get('endereco', '')
         bairro = dados.get('bairro', '')
         cidade = dados.get('cidade', '')
@@ -999,9 +999,9 @@ def salvar_pedido():
 
         # Inserir pedido principal
         cur.execute("""
-            INSERT INTO tbl_pedidos (id_cliente, valor_total, numero_mesa)
+            INSERT INTO tbl_pedidos (id_cliente, valor_total, numero_casa)
             VALUES (%s, %s, %s)
-        """, (id_cliente, valor_total, numero_mesa))
+        """, (id_cliente, valor_total, numero_casa))
         
         id_pedido = cur.lastrowid
         logging.info(f"✅ Pedido criado: {id_pedido}")
@@ -1015,9 +1015,9 @@ def salvar_pedido():
             
             cur.execute("""
                 INSERT INTO tbl_detalhes_pedido 
-                (id_pedido, id_prod, id_cliente, quantidade, preco_unitario, nome_cliente, telefone, valor_total, numero_mesa, endereco, bairro, ponto_referencia, form_pgmto, tipo_consumo, observacao,taxa_entrega)
+                (id_pedido, id_prod, id_cliente, quantidade, preco_unitario, nome_cliente, telefone, valor_total, numero_casa, endereco, bairro, ponto_referencia, form_pgmto, tipo_consumo, observacao,taxa_entrega)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-            """, (id_pedido, id_prod, id_cliente, quantidade, preco_unitario, nome_cliente, telefone, valor_item, numero_mesa, endereco, bairro, ponto_referencia, form_pgmto, tipo_consumo, observacao,taxa_entrega))
+            """, (id_pedido, id_prod, id_cliente, quantidade, preco_unitario, nome_cliente, telefone, valor_item, numero_casa, endereco, bairro, ponto_referencia, form_pgmto, tipo_consumo, observacao,taxa_entrega))
         
         conn.commit()
         logging.info(f"✅ Pedido salvo: {id_pedido} com {len(carrinho)} itens")
@@ -1201,7 +1201,7 @@ def ger_pedidos():
                 data_fim = datetime.strptime(data_fim, '%Y-%m-%d').strftime('%d/%m/%Y')
 
 
-            query = """SELECT * FROM tbl_detalhes_pedido
+            query = """SELECT * FROM vw_pedidos_fin
                     where date(dt_registro) <= curdate()
                     
             """  
