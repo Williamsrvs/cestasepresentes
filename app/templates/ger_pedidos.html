@@ -654,7 +654,7 @@
 
         // Taxa de entrega: R$ 6,00 fixo se Delivery
         const isDelivery   = pedido.tipo_consumo.toLowerCase() === 'delivery';
-        const valorTaxa    = isDelivery ? 6.00 : 0;
+        const valorTaxa    = isDelivery ? 15.00 : 0;
         const totalGeral   = (subtotal + valorTaxa).toFixed(2).replace('.', ',');
         const subtotalFmt  = subtotal.toFixed(2).replace('.', ',');
         const taxaFmt      = valorTaxa.toFixed(2).replace('.', ',');
@@ -720,11 +720,11 @@
             </head>
             <body>
                 <div class="cupom-header">
-                    <div class="loja-nome">🍽️ RESTAURANTE BOM TEMPERO</div>
+                    <div class="loja-nome">🎁 LP Cestas e Presentes</div>
                     <div class="loja-info">
-                        AV. Tancredo Neves, S/N<br>
-                        Cidade Universitária - Maceió/AL<br>
-                        Tel: (82) 99689-2148
+                        Rua B 44, Qd B 44 - Benedito Bentes 1 <br>
+                        CEP: 57085-736 - Maceió/Al<br>
+                        Tel: (82) 98866-3902
                     </div>
                 </div>
 
