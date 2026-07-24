@@ -53,12 +53,10 @@ class Config:
     
     # Configurações do Flask
     # ✅ Corrigido: Garantindo que sempre haja uma SECRET_KEY para evitar o erro ValueError no Railway
-    SECRET_KEY = os.getenv('SECRET_KEY', 'Q1k2v1y5@2025-service-tour')
-    
-    # Se você quiser forçar a definição apenas em produção mas sem travar o deploy inicial,
-    # pode usar uma lógica que avisa no log mas não levanta exceção:
-    # if not os.getenv('SECRET_KEY') and os.getenv('FLASK_ENV') == 'production':
-    #     print("⚠️ AVISO: SECRET_KEY não definida em produção! Usando chave padrão.")
+    SECRET_KEY = os.getenv('SECRET_KEY', 'Ccap2004@-service-tour')
+    SQLALCHEMY_DATABASE_URI = 'mysql+mysqlconnector://{user}:{password}@{host}:{port}/{database}'.format(**db_config)    
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+
 
     DEBUG = os.getenv('FLASK_ENV', 'development') == 'development'
     UPLOAD_FOLDER = os.getenv('UPLOAD_FOLDER', 'static/uploads')
