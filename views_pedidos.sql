@@ -6,22 +6,16 @@
 CREATE OR REPLACE VIEW u799109175_cestas_present.vw_pedidos_fin AS
 SELECT
     pe.id_pedido,
+    pr.nome_prod,
+    pr.valor AS valor_unitario,
+    pe.quantidade,
+    pe.valor_total,
     pe.nome_cliente,
     pe.telefone,
-    pe.dt_registro,
-    pe.status_pedido,
-    pe.endereco,
-    pe.bairo,
-    pe.form_pgmto,
-	pe.tipo_consumo,
-    SUM(pe.valor_total) AS valor_total
+    pe.dt_registro
 FROM u799109175_cestas_present.tbl_detalhes_pedido pe
-GROUP BY
-    pe.id_pedido,
-    pe.nome_cliente,
-    pe.telefone,
-    pe.dt_registro,
-    pe.status_pedido
+INNER JOIN u799109175_cestas_present.tbl_prod pr 
+    ON pr.id_prod = pe.id_prod
 ORDER BY pe.dt_registro DESC;
 
 -- ============================================

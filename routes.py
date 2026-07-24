@@ -1,10 +1,10 @@
-from datetime import datetime, date, timedelta
+from datetime import datetime, date
 from flask import Flask, render_template, request, jsonify, redirect, url_for
 from config import Config
 import logging
 import os
+import threading
 import mysql.connector as mysql_conn
-from config import db_config
 import openpyxl
 from io import BytesIO
 import xlsxwriter
@@ -18,10 +18,10 @@ from selenium.webdriver.chrome.options import Options
 import time
 from urllib.parse import quote
 
-# Configuração de logging   
+# Configuração de logging
 logging.basicConfig(
-    level=getattr(logging, Config.LOG_LEVEL, logging.INFO),
-    filename=Config.LOG_FILE,
+    level=logging.INFO,
+    filename='app_errors.log',
     format='%(asctime)s - %(levelname)s - %(message)s'
 )
 
@@ -29,12 +29,62 @@ app = Flask(__name__)
 
 # ✅ Carrega TODAS as configurações do Config automaticamente
 app.config.from_object(Config)
-app.config.update(
-    SESSION_COOKIE_HTTPONLY=Config.SESSION_COOKIE_HTTPONLY,
-    SESSION_COOKIE_SECURE=Config.SESSION_COOKIE_SECURE,
-    SESSION_COOKIE_SAMESITE=Config.SESSION_COOKIE_SAMESITE,
-    PERMANENT_SESSION_LIFETIME=Config.PERMANENT_SESSION_LIFETIME
-)
+
+class MySQL:
+    def __init__(self, app=None):
+        self.app = app
+        self._local = threading.local()
+
+    def _new_connection(self):
+        try:
+            conn = mysql_conn.connect(
+                host=Config.MYSQL_HOST,
+                user=Config.MYSQL_USER,
+                password=Config.MYSQL_PASSWORD,
+                database=Config.MYSQL_DB,
+                port=Config.MYSQL_PORT,
+                autocommit=False
+            )
+            return conn
+        except mysql_conn.Error as e:
+            logging.error(f"❌ Falha ao conectar ao MySQL: {e}")
+            raise
+
+    @property
+    def connection(self):
+        conn = getattr(self._local, 'connection', None)
+        if conn is None or not conn.is_connected():
+            conn = self._new_connection()
+            self._local.connection = conn
+        return conn
+
+    def commit(self):
+        try:
+            self.connection.commit()
+        except Exception as e:
+            logging.error(f"❌ Falha ao commitar no MySQL: {e}")
+            raise
+
+    def rollback(self):
+        conn = getattr(self._local, 'connection', None)
+        if conn is not None and conn.is_connected():
+            try:
+                conn.rollback()
+            except Exception as e:
+                logging.error(f"❌ Falha ao rollback no MySQL: {e}")
+                raise
+
+    def close(self):
+        conn = getattr(self._local, 'connection', None)
+        if conn is not None:
+            try:
+                conn.close()
+            except Exception as e:
+                logging.error(f"❌ Falha ao fechar conexão MySQL: {e}")
+            finally:
+                self._local.connection = None
+
+mysql = MySQL(app)
 
 # Filtro para converter bytes em base64 para exibir imagens
 @app.template_filter('b64encode')
@@ -44,39 +94,6 @@ def b64encode_filter(data):
     import base64
     return base64.b64encode(data).decode('utf-8')
 
-# Classe para gerenciar conexão com MySQL
-class MySQLConnection:
-    @staticmethod
-    def get_connection():
-        try:
-            conn = mysql_conn.connect(
-                host=db_config['host'],
-                user=db_config['user'],
-                password=db_config['password'],
-                database=db_config['database'],
-                port=db_config['port'],
-                # connection_timeout=Config.MYSQL_CONNECT_TIMEOUT, # Removido por incompatibilidade
-                # read_timeout=Config.MYSQL_READ_TIMEOUT,       # Removido por incompatibilidade
-                # write_timeout=Config.MYSQL_WRITE_TIMEOUT,     # Removido por incompatibilidade
-                autocommit=False
-            )
-            return conn
-        except mysql_conn.Error as e:
-            logging.error(f"❌ Erro ao conectar ao MySQL: {e}")
-            logging.error(f"   Host: {db_config['host']}")
-            logging.error(f"   User: {db_config['user']}")
-            logging.error(f"   Database: {db_config['database']}")
-            raise Exception(f"Erro de conexão com banco de dados: {str(e)}")
-        except Exception as e:
-            logging.error(f"❌ Erro inesperado ao conectar: {e}")
-            raise
-
-# Alias para compatibilidade
-mysql = MySQLConnection
-
-# Log ao iniciar
-logging.info("🚀 Aplicação iniciando...")
-logging.info(f"📡 Conectando em: {Config.MYSQL_HOST}")
 logging.info(f"👤 Usuário: {Config.MYSQL_USER}")
 logging.info(f"🗄️  Database: {Config.MYSQL_DB}")
 
@@ -95,8 +112,7 @@ def ler_sql_robusto(schema_path):
 def criar_tabelas():
     try:
         with app.app_context():
-            conn = MySQLConnection.get_connection()
-            cur = conn.cursor(dictionary=True)
+            cur = mysql.connection.cursor()
             schema_path = os.path.join(os.path.dirname(__file__), 'schema.sql')
             sql_text = ler_sql_robusto(schema_path)
             sql_commands = sql_text.split(';')
@@ -104,24 +120,22 @@ def criar_tabelas():
                 cmd = command.strip()
                 if cmd and cmd.lower().startswith('create table'):
                     cur.execute(cmd)
-            conn.commit()
+            mysql.connection.commit()
             cur.close()
-            conn.close()
             logging.info('✅ Tabelas criadas/verificadas com sucesso.')
     except Exception as e:
         logging.error(f'❌ Erro ao criar/verificar tabelas: {e}')
 
 @app.route('/')
 def index():
-    conn = mysql.get_connection(); cur = conn.cursor(dictionary=True)
+    cur = mysql.connection.cursor()
     try:
-        # Buscar apenas produtos ativos (ativo = 1)   
         cur.execute("SELECT * FROM tbl_prod WHERE ativo = 1 ORDER BY created_at DESC")
         produtos = cur.fetchall()
         
-        # Buscar subgrupos únicos apenas de produtos ativos
-        cur.execute("SELECT DISTINCT subgrupo FROM tbl_prod WHERE ativo = 1 ORDER BY subgrupo ASC")
-        subgrupos = cur.fetchall()
+        cur.execute("SELECT DISTINCT subgrupo FROM tbl_prod ORDER BY subgrupo ASC")
+        subgrupos_raw = cur.fetchall()
+        subgrupos = [{"subgrupo": s[0]} for s in subgrupos_raw] if subgrupos_raw else []
         
         return render_template('index.html', produtos=produtos, subgrupos=subgrupos)
     except Exception as e:
@@ -134,7 +148,7 @@ def index():
 def cliente():
     cur = None
     try:
-        conn = mysql.get_connection(); cur = conn.cursor(dictionary=True)
+        cur = mysql.connection.cursor()
         
         if request.method == 'GET':
             cur.execute("SELECT * FROM tbl_cliente")
@@ -169,14 +183,14 @@ VALUES (%s,%s, %s, %s, %s, %s, %s)
     dados.get('uf')
 ))
     
-            conn.commit()
+            mysql.connection.commit()
             logging.info(f"✅ Cliente cadastrado: {dados.get('nome_cliente')}")
             return redirect(url_for('cliente'))
             
     except Exception as e:
         logging.error(f"❌ Erro na rota /cliente: {e}")
-        if conn is not None:
-            conn.rollback()
+        if mysql.connection:
+            mysql.connection.rollback()
         return jsonify({"error": str(e)}), 500
     finally:
         if cur:
@@ -188,63 +202,22 @@ def lojista():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-
     if request.method == 'POST':
-        nome_usuario = request.form.get('nome_usuario', '').strip()
-        senha_usuario = request.form.get('senha_usuario', '').strip()
-
-        # 🔹 LOGIN FIXO (ADMIN) — opcional
-        if nome_usuario == 'Cestasepresentes' and senha_usuario == '140311':
-            logging.info(f"✅ Login admin realizado: {nome_usuario}")
-            return redirect(url_for('lojista'))  # ou lojista
-        
-        if nome_usuario == 'usuario_teste' and senha_usuario == 'teste123':
-            logging.info(f"✅ Login admin realizado: {nome_usuario}")
-            return redirect(url_for('lojista'))  # ou lojista
-
-        try:
-            conn = mysql.get_connection()
-            cur = conn.cursor(dictionary=True)
-
-            cur.execute("""
-                SELECT id_usuario, nome_usuario 
-                FROM tbl_cadastrar_usuario 
-                WHERE nome_usuario = %s AND senha_usuario = %s
-            """, (nome_usuario, senha_usuario))
-
-            usuario = cur.fetchone()
-
-            if usuario:
-                logging.info(f"✅ Login bem-sucedido: {nome_usuario}")
-                return redirect(url_for('lojista'))  # lojista.html
-            else:
-                logging.warning(f"❌ Usuário ou senha inválidos: {nome_usuario}")
-                return render_template(
-                    'login.html',
-                    erro="Usuário ou senha inválidos!"
-                )
-
-        except Exception as e:
-            logging.error(f"❌ Erro na rota /login: {e}")
-            return render_template(
-                'login.html',
-                erro="Erro interno. Tente novamente."
-            )
-
-        finally:
-            if cur:
-                cur.close()
-            if conn:
-                conn.close()
-
+        nome_usuario = request.form.get('nome_usuario')
+        senha_usuario = request.form.get('senha_usuario')
+        if nome_usuario == 'admin' and senha_usuario == '859117':
+            success_message = f"✅ Login bem-sucedido para o usuário: {nome_usuario}"
+            return render_template('lojista.html', success_message=success_message)
+        else:
+            logging.warning(f"❌ Login falhou para o usuário: {nome_usuario}")
+            return render_template('login.html', erro="Usuário ou senha inválidos!")
     return render_template('login.html')
-
 
 @app.route('/cadastrar_usuario', methods=['GET', 'POST'])
 def cadastrar_usuario():
     cur=None
     try:
-        conn = mysql.get_connection(); cur = conn.cursor(dictionary=True)
+        cur = mysql.connection.cursor()
         if request.method == 'GET':
             cur.execute("SELECT * FROM tbl_cadastrar_usuario")
             usuarios = cur.fetchall()
@@ -273,13 +246,13 @@ VALUES (%s, %s, %s)
     dados.get('senha_usuario'),
     dados.get('repetir_senha')
 ))
-            conn.commit()
+            mysql.connection.commit()
             logging.info(f"✅ Usuário cadastrado: {dados.get('nome_usuario')}")
             return redirect(url_for('cadastrar_usuario'))
     except Exception as e:
         logging.error(f"❌ Erro na rota /cadastrar_usuario: {e}")
-        if conn is not None:
-            conn.rollback()
+        if mysql.connection:
+            mysql.connection.rollback()
         return jsonify({"error": str(e)}),500
     finally:
         if cur:
@@ -291,7 +264,7 @@ VALUES (%s, %s, %s)
 def produto(id_prod=None):
     cur = None
     try:
-        conn = mysql.get_connection(); cur = conn.cursor(dictionary=True)
+        cur = mysql.connection.cursor()
         
         # GET: Listar produtos (apenas ativos)
         if request.method == 'GET':
@@ -335,7 +308,7 @@ def produto(id_prod=None):
                 dados.get('form_pgmto', ''),
                 imagem_bytes
             ))
-            conn.commit()
+            mysql.connection.commit()
             logging.info(f"✅ Produto cadastrado: {dados.get('nome_prod')}")
             return redirect(url_for('produto'))
             
@@ -377,7 +350,7 @@ def produto(id_prod=None):
                     id_prod
                 ))
             
-            conn.commit()
+            mysql.connection.commit()
             logging.info(f"✅ Produto atualizado: {dados.get('nome_prod')}")
             return jsonify({"message": "Produto atualizado com sucesso"})
 
@@ -395,65 +368,22 @@ def produto(id_prod=None):
                 cur.execute("UPDATE tbl_prod SET ativo = 0 WHERE id_prod = %s", (id_prod,))
                 
                 if cur.rowcount > 0:
-                    conn.commit()
+                    mysql.connection.commit()
                     logging.info(f"✅ Produto desativado: {id_prod} - {produto_existe['nome_prod']}")
                     return jsonify({"message": "Produto excluído com sucesso"}), 200
                 else:
-                    conn.rollback()
-                    return jsonify({"error": "Falha ao excluir the produto"}), 400
+                    mysql.connection.rollback()
+                    return jsonify({"error": "Falha ao excluir o produto"}), 400
                     
             except Exception as delete_error:
-                conn.rollback()
+                mysql.connection.rollback()
                 logging.error(f"❌ Erro ao deletar produto {id_prod}: {delete_error}")
                 return jsonify({"error": f"Erro ao excluir: {str(delete_error)}"}), 500
             
     except Exception as e:
         logging.error(f"❌ Erro na rota /produto: {e}")
-        if conn is not None:
-            conn.rollback()
-        return jsonify({"error": str(e)}), 500
-    finally:
-        if cur:
-            cur.close()
-
-@app.route('/produto/<int:id_prod>/visibilidade', methods=['PATCH'])
-def atualizar_visibilidade_produto(id_prod):
-    """Atualizar visibilidade do produto (ativo/inativo)"""
-    cur = None
-    try:
-        dados = request.get_json()
-        
-        if not dados or 'ativo' not in dados:
-            return jsonify({"error": "Campo 'ativo' é obrigatório"}), 400
-        
-        status = 1 if dados.get('ativo') else 0
-        
-        conn = mysql.get_connection()
-        cur = conn.cursor(dictionary=True)
-        
-        # Verificar se produto existe
-        cur.execute("SELECT id_prod, nome_prod FROM tbl_prod WHERE id_prod = %s", (id_prod,))
-        produto = cur.fetchone()
-        
-        if not produto:
-            return jsonify({"error": "Produto não encontrado"}), 404
-        
-        # Atualizar visibilidade
-        cur.execute("UPDATE tbl_prod SET ativo = %s WHERE id_prod = %s", (status, id_prod))
-        conn.commit()
-        
-        status_text = "visível" if status == 1 else "oculto"
-        logging.info(f"✅ Produto {id_prod} ({produto['nome_prod']}) agora está {status_text}")
-        
-        return jsonify({
-            "message": f"Produto agora está {status_text}",
-            "ativo": status
-        }), 200
-        
-    except Exception as e:
-        logging.error(f"❌ Erro ao atualizar visibilidade do produto {id_prod}: {e}")
-        if conn is not None:
-            conn.rollback()
+        if mysql.connection:
+            mysql.connection.rollback()
         return jsonify({"error": str(e)}), 500
     finally:
         if cur:
@@ -466,7 +396,7 @@ def produto_excel():
         logging.info("🚀 Iniciando geração do Excel...")
 
         # Cursor com DictCursor (agora funcionando corretamente)
-        conn = mysql.get_connection(); cur = conn.cursor(dictionary=True)
+        cur = mysql.connection.cursor(DictCursor)
         logging.info("✅ Cursor criado")
 
         cur.execute("SELECT * FROM tbl_prod WHERE ativo = 1 ORDER BY created_at DESC")
@@ -498,6 +428,7 @@ def produto_excel():
 
         # Escrever cabeçalhos
         worksheet.write_row(0, 0, colunas, header_format)
+
         logging.info("✍️ Cabeçalhos escritos")
 
         # --- LOOP CORRIGIDO ---
@@ -559,7 +490,7 @@ def produto_excel():
 def teste_produtos():
     cur = None
     try:
-        conn = mysql.get_connection(); cur = conn.cursor(dictionary=True)
+        cur = mysql.connection.cursor(DictCursor)
         cur.execute("SELECT * FROM tbl_prod WHERE ativo = 1 ORDER BY created_at DESC LIMIT 3")
 
         colunas = [i[0] for i in cur.description]
@@ -596,8 +527,8 @@ def pesquisa():
         
         try:
             print("🔌 Tentando conectar ao MySQL...")
-            conn = mysql.get_connection()
-            cur = conn.cursor(dictionary=True)
+            conn = mysql.connection
+            cur = conn.cursor()
             print("✅ Conectado ao banco!\n")
 
             # Criação da tabela
@@ -676,7 +607,7 @@ def contato():
                                     erro="Todos os campos são obrigatórios!")
             
             # Criar cursor
-            conn = mysql.get_connection(); cur = conn.cursor(dictionary=True)
+            cur = mysql.connection.cursor()
             
             # Inserir dados
             cur.execute("""
@@ -686,7 +617,7 @@ def contato():
             """, (nome, email, mensagem))
             
             # ORDEM CORRETA: commit antes de fechar
-            conn.commit()
+            mysql.connection.commit()
             cur.close()
             
             logging.info(f"📩 Mensagem recebida de {nome} ({email})")
@@ -700,40 +631,12 @@ def contato():
                                 erro="Erro ao enviar mensagem. Tente novamente.")
     
     return render_template('contato.html')
-if __name__ == '__main__':
-    print("\n" + "="*50)
-    print("🚀 SERVICE TOUR - Iniciando servidor...")
-    print("="*50)
-
-    import socket
-    local_ip = socket.gethostbyname(socket.gethostname())
-
-    print(f"📍 Servidor local: http://127.0.0.1:5000")
-    print(f"📍 Servidor LAN: http://{local_ip}:5000")
-    print("="*50 + "\n")
-
-    try:
-        # Testa conexão antes de iniciar
-        with app.app_context():
-            conn = mysql.get_connection(); cur = conn.cursor(dictionary=True)
-            cur.execute("SELECT DATABASE(), VERSION()")
-            db, version = cur.fetchone()
-            cur.close()
-            print(f"✅ Conectado ao banco: {db}")
-            print(f"✅ Versão MySQL: {version}\n")
-        # Chama função para criar/verificar tabelas
-        criar_tabelas()
-    except Exception as e:
-        print(f"⚠️  Aviso: Não foi possível conectar ao banco: {e}\n")
-
-
-from datetime import datetime
 
 @app.route('/ger_clientes', methods=['GET', 'POST'])
 def ger_clientes():
     if request.method == 'GET':
         try:
-            conn = mysql.get_connection(); cur = conn.cursor(dictionary=True)
+            cur = mysql.connection.cursor()
             
             # Captura os parâmetros de data
             data_inicio = request.args.get('data_inicio')
@@ -781,7 +684,7 @@ def cliente_excel():
         logging.info("🚀 Iniciando geração do Excel...")
 
         # Cursor com DictCursor
-        conn = mysql.get_connection(); cur = conn.cursor(dictionary=True)
+        cur = mysql.connection.cursor(DictCursor)
         logging.info("✅ Cursor criado")
 
         # Buscar clientes
@@ -878,7 +781,7 @@ def cliente_excel():
 def pedidos():
     cur = None
     try:
-        conn = mysql.get_connection(); cur = conn.cursor(dictionary=True)
+        cur = mysql.connection.cursor()
         cur.execute("SELECT * FROM tbl_prod WHERE ativo = 1 ORDER BY created_at DESC")
         produtos = cur.fetchall()
         cur.execute("SELECT * FROM tbl_cliente")
@@ -891,34 +794,7 @@ def pedidos():
         if cur:
             cur.close()
 
-
-@app.route('/api/produtos', methods=['GET'])
-def api_produtos():
-    """Endpoint para carregar produtos via AJAX"""
-    cur = None
-    try:
-        conn = mysql.get_connection()
-        cur = conn.cursor(dictionary=True)
-        cur.execute("SELECT id_prod, nome_prod, valor FROM tbl_prod WHERE ativo = 1 ORDER BY created_at DESC")
-        produtos = cur.fetchall()
-        
-        if not produtos:
-            return jsonify({"status": "sucesso", "produtos": [], "mensagem": "Nenhum produto encontrado"})
-        
-        return jsonify({
-            "status": "sucesso",
-            "produtos": produtos,
-            "total": len(produtos)
-        })
-    except Exception as e:
-        logging.error(f"❌ Erro ao buscar produtos via API: {e}")
-        return jsonify({
-            "status": "erro",
-            "produtos": []
-        }), 500
-    finally:
-        if cur:
-            cur.close()
+    return render_template('pedidos.html')
 
 
 @app.route('/salvar_pedido', methods=['POST'])
@@ -933,75 +809,27 @@ def salvar_pedido():
         carrinho = dados.get('carrinho', [])
         id_cliente = dados.get('id_cliente')
         nome_cliente = dados.get('nome_cliente')
-        # O frontend envia como email_cliente e telefone_cliente, mas o BD usa email e telefone
-        email = dados.get('email_cliente', dados.get('email', ''))
-        telefone = dados.get('telefone_cliente', dados.get('telefone', ''))
-        numero_casa = dados.get('numero_casa') or 0  
-        endereco = dados.get('endereco', '')
-        bairro = dados.get('bairro', '')
-        cidade = dados.get('cidade', '')
-        uf = dados.get('uf', '')
-        ponto_referencia = dados.get('ponto_referencia', '')
-        form_pgmto = dados.get('form_pgmto', '')
-        tipo_consumo = dados.get('tipo_consumo', '')
-        observacao = dados.get('observacao', '')
-        taxa_entrega = dados.get('taxa_entrega', 0.0)
-
+        telefone_cliente = dados.get('telefone_cliente')
+        
         if not carrinho:
             return jsonify({"status": "erro", "mensagem": "Carrinho vazio"}), 400
-
-        # Abrir conexão o mais cedo possível para permitir criar/consultar cliente
-        conn = mysql.get_connection(); cur = conn.cursor(dictionary=True)
-
-        # Se não enviaram id_cliente, tentar encontrar por telefone/nome ou criar novo cliente
+        
         if not id_cliente:
-            if nome_cliente and nome_cliente.strip() != '':
-                # Tentar correspondência por telefone primeiro quando disponível
-                encontrado = None
-                try:
-                    if telefone and telefone.strip() != '':
-                        cur.execute("SELECT id_cliente FROM tbl_cliente WHERE telefone = %s LIMIT 1", (telefone,))
-                        encontrado = cur.fetchone()
-                    # Se não encontrou por telefone, tentar por nome
-                    if not encontrado:
-                        cur.execute("SELECT id_cliente FROM tbl_cliente WHERE nome_cliente = %s LIMIT 1", (nome_cliente,))
-                        encontrado = cur.fetchone()
-
-                    if encontrado and encontrado.get('id_cliente'):
-                        id_cliente = encontrado.get('id_cliente')
-                    else:
-                        # Inserir novo cliente com TODOS os dados fornecidos
-                        cur.execute(
-                            "INSERT INTO tbl_cliente (nome_cliente,email,endereco,bairro,cidade,uf,telefone) VALUES (%s, %s, %s, %s, %s, %s, %s)",
-                            (
-                                nome_cliente,
-                                email,      # Email do formulário
-                                endereco or '',
-                                bairro or '',
-                                cidade or '',       # Cidade do formulário
-                                uf or '',           # UF do formulário
-                                telefone
-                            )
-                        )
-                        id_cliente = cur.lastrowid
-                        logging.info(f"✅ Cliente criado: {id_cliente} - {nome_cliente} | Email: {email} | Cidade: {cidade}, {uf}")
-                except Exception as e:
-                    logging.error(f"❌ Erro ao localizar/criar cliente: {e}")
-                    conn.rollback()
-                    return jsonify({"status": "erro", "mensagem": "Erro ao processar cliente"}), 500
-            else:
-                # Nem id nem nome foram informados
-                cur.close()
-                return jsonify({"status": "erro", "mensagem": "ID ou nome do cliente obrigatório"}), 400
-
+            return jsonify({"status": "erro", "mensagem": "ID do cliente obrigatório"}), 400
+        
+        cur = mysql.connection.cursor()
+        
+        # Não criar tabelas aqui — já existem no banco com a estrutura correta
+        # O CREATE TABLE IF NOT EXISTS pode causar erro se a tabela foi alterada manualmente
+        
         # Calcular valor total do pedido
         valor_total = sum(float(item.get('subtotal', 0)) for item in carrinho)
-
+        
         # Inserir pedido principal
         cur.execute("""
-            INSERT INTO tbl_pedidos (id_cliente, valor_total, numero_casa)
-            VALUES (%s, %s, %s)
-        """, (id_cliente, valor_total, numero_casa))
+            INSERT INTO tbl_pedidos (id_cliente, valor_total)
+            VALUES (%s, %s)
+        """, (id_cliente, valor_total))
         
         id_pedido = cur.lastrowid
         logging.info(f"✅ Pedido criado: {id_pedido}")
@@ -1015,37 +843,34 @@ def salvar_pedido():
             
             cur.execute("""
                 INSERT INTO tbl_detalhes_pedido 
-                (id_pedido, id_prod, id_cliente, quantidade, preco_unitario, nome_cliente, telefone, valor_total, numero_casa, endereco, bairro, ponto_referencia, form_pgmto, tipo_consumo, observacao,taxa_entrega)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-            """, (id_pedido, id_prod, id_cliente, quantidade, preco_unitario, nome_cliente, telefone, valor_item, numero_casa, endereco, bairro, ponto_referencia, form_pgmto, tipo_consumo, observacao,taxa_entrega))
+                (id_pedido, id_prod, id_cliente, quantidade, preco_unitario, nome_cliente, telefone, valor_total)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            """, (id_pedido, id_prod, id_cliente, quantidade, preco_unitario, nome_cliente, telefone_cliente, valor_item))
         
-        conn.commit()
+        mysql.connection.commit()
         logging.info(f"✅ Pedido salvo: {id_pedido} com {len(carrinho)} itens")
         
         return jsonify({
             "status": "sucesso",
             "mensagem": "Pedido salvo com sucesso!",
             "id_pedido": id_pedido,
-            "valor_total": float(valor_total),
-            "taxa_entrega": float(taxa_entrega) if taxa_entrega else 0.0
+            "valor_total": float(valor_total)
         }), 200
-
         
     except Exception as e:
         logging.error(f"❌ Erro ao salvar pedido: {e}")
-        if conn is not None:
-            conn.rollback()
+        if mysql.connection:
+            mysql.connection.rollback()
         return jsonify({"status": "erro", "mensagem": str(e)}), 500
     finally:
         if cur:
             cur.close()
 
-# Criar uma rota para enviar os pedidos via whatsapp
+#criar uma rota para enviar os pedidos via whatsapp
 @app.route('/enviar_whatsapp', methods=['POST'])
 def enviar_whatsapp():
     """
-    Gera link wa.me para enviar pedido via WhatsApp 
-    NÃO salva pedido - apenas gera e retorna URL
+    Recebe dados do pedido e envia via WhatsApp usando Selenium
     """
     try:
         dados = request.get_json()
@@ -1058,130 +883,109 @@ def enviar_whatsapp():
         
         whatsapp_numero = dados.get('whatsapp_numero')
         mensagem = dados.get('mensagem')
+        id_pedido = dados.get('id_pedido')
         
         if not whatsapp_numero or not mensagem:
-            logging.warning(f"⚠️ Parâmetros incompletos: numero={whatsapp_numero}, msg_length={len(str(mensagem)) if mensagem else 0}")
             return jsonify({
                 "status": "erro",
                 "mensagem": "Número de WhatsApp ou mensagem não fornecidos"
             }), 400
         
         # Limpar número (remover caracteres especiais)
-        whatsapp_numero_limpo = ''.join(filter(str.isdigit, str(whatsapp_numero)))
+        whatsapp_numero = ''.join(filter(str.isdigit, whatsapp_numero))
         
-        if not whatsapp_numero_limpo:
-            logging.warning(f"❌ Número WhatsApp inválido após limpeza: {whatsapp_numero}")
-            return jsonify({
-                "status": "erro",
-                "mensagem": "Número de WhatsApp inválido"
-            }), 400
+        # Configurar Selenium
+        chrome_options = Options()
+        chrome_options.add_argument("--no-sandbox")
+        chrome_options.add_argument("--disable-dev-shm-usage")
+        chrome_options.add_argument("--disable-notifications")
+        chrome_options.add_argument("--disable-popup-blocking")
+        chrome_options.add_argument("--disable-blink-features=AutomationControlled")
+        chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
+        chrome_options.add_experimental_option('useAutomationExtension', False)
         
+        # Inicializar driver do Selenium
+        driver = None
         try:
-            # Criar URL do WhatsApp com mensagem pré-formatada
-            # quote() codifica a mensagem para ser segura em URL
-            url_whatsapp = f"https://wa.me/{whatsapp_numero_limpo}?text={quote(str(mensagem))}"
+            driver = webdriver.Chrome(options=chrome_options)
             
-            logging.info(f"📱 Link WhatsApp gerado com sucesso para {whatsapp_numero_limpo}")
+            # URL do WhatsApp Web com mensagem pre-formatada
+            url_whatsapp = f"https://wa.me/{whatsapp_numero}?text={quote(mensagem)}"
             
-            return jsonify({
-                "status": "sucesso",
-                "mensagem": "Link WhatsApp gerado com sucesso!",
-                "numero_whatsapp": whatsapp_numero_limpo,
-                "url_whatsapp": url_whatsapp
-            }), 200
+            logging.info(f"📱 Abrindo WhatsApp Web: {url_whatsapp}")
+            driver.get(url_whatsapp)
+            
+            # Aguardar carregamento da página
+            time.sleep(5)
+            
+            # Tentar encontrar o campo de mensagem
+            try:
+                # Esperar pelo input de mensagem aparecer
+                message_input = WebDriverWait(driver, 10).until(
+                    EC.presence_of_element_located((By.XPATH, "//div[@contenteditable='true'][@data-tab='10']"))
+                )
+                
+                logging.info("✅ Campo de mensagem encontrado")
+                
+                # Esperar pelo botão de enviar
+                send_button = WebDriverWait(driver, 10).until(
+                    EC.element_to_be_clickable((By.XPATH, "//button[@aria-label='Enviar']"))
+                )
+                
+                # Clicar no botão de enviar
+                send_button.click()
+                logging.info(f"✅ Mensagem enviada para {whatsapp_numero}")
+                
+                # Aguardar um pouco para garantir o envio
+                time.sleep(3)
+                
+                # Atualizar status do pedido no banco de dados
+                cur = mysql.connection.cursor()
+                cur.execute("""
+                    UPDATE tbl_pedidos 
+                    SET status_pedido = 'enviado_whatsapp'
+                    WHERE id_pedido = %s
+                """, (id_pedido,))
+                mysql.connection.commit()
+                cur.close()
+                
+                logging.info(f"✅ Pedido {id_pedido} marcado como enviado via WhatsApp")
+                
+                return jsonify({
+                    "status": "sucesso",
+                    "mensagem": f"Pedido #{id_pedido} enviado via WhatsApp com sucesso!",
+                    "id_pedido": id_pedido,
+                    "numero_whatsapp": whatsapp_numero
+                }), 200
+                
+            except Exception as e:
+                logging.warning(f"⚠️ Erro ao enviar mensagem via Selenium: {e}")
+                # Mesmo se falhar o envio automático, registrar no banco
+                try:
+                    cur = mysql.connection.cursor()
+                    cur.execute("""
+                        UPDATE tbl_pedidos 
+                        SET status_pedido = 'pendente_whatsapp'
+                        WHERE id_pedido = %s
+                    """, (id_pedido,))
+                    mysql.connection.commit()
+                    cur.close()
+                except:
+                    pass
+                
+                raise Exception(f"Erro ao enviar mensagem: {str(e)}")
         
-        except Exception as e:
-            logging.error(f"❌ Erro ao gerar URL WhatsApp: {e}")
-            return jsonify({
-                "status": "erro",
-                "mensagem": f"Erro ao processar mensagem: {str(e)}"
-            }), 500
+        finally:
+            # Fechar o navegador
+            if driver:
+                driver.quit()
+                logging.info("🔒 Navegador fechado")
     
     except Exception as e:
-        logging.error(f"❌ Erro na rota enviar_whatsapp: {e}", exc_info=True)
+        logging.error(f"❌ Erro ao enviar WhatsApp: {e}")
         return jsonify({
             "status": "erro",
-            "mensagem": f"Erro ao processar requisição: {str(e)}"
-        }), 500
-
-
-@app.route('/gerar_brcode_pix', methods=['POST'])
-def gerar_brcode_pix():
-    """
-    Gera QR Code PIX válido (Brcode) do Banco Central do Brasil
-    
-    Recebe:
-    - chave_pix: CPF, email, telefone ou chave aleatória
-    - valor: Valor em reais (opcional)
-    - nome_beneficiario: Nome do beneficiário
-    
-    Retorna: QR Code em base64 para exibição na página
-    """
-    try:
-        from brcode import BRCode
-        import qrcode
-        import io
-        import base64
-        
-        dados = request.get_json()
-        chave_pix = dados.get('chave_pix', '')
-        valor = float(dados.get('valor', 0))
-        nome_beneficiario = dados.get('nome_beneficiario', 'LOJA')
-        
-        if not chave_pix:
-            return jsonify({
-                "status": "erro",
-                "mensagem": "Chave PIX não fornecida"
-            }), 400
-        
-        # Gerar Brcode PIX válido (texto cópia e cola)
-        pix_dict = {
-            'name': nome_beneficiario,
-            'city': 'Brasilia',  # Cidade padrão
-            'account': 'br.gov.bcb.brcode',
-            'key': chave_pix
-        }
-        
-        if valor > 0:
-            pix_dict['amount'] = valor
-        
-        # Usar biblioteca brcode para gerar string Brcode
-        brcode = BRCode(**pix_dict)
-        brcode_texto = str(brcode)
-        
-        # Gerar QR Code a partir do Brcode texto
-        qr = qrcode.QRCode(
-            version=1,
-            error_correction=qrcode.constants.ERROR_CORRECT_H,
-            box_size=10,
-            border=4,
-        )
-        qr.add_data(brcode_texto)
-        qr.make(fit=True)
-        
-        img = qr.make_image(fill_color="black", back_color="white")
-        
-        # Converter para base64
-        buffer = io.BytesIO()
-        img.save(buffer, format='PNG')
-        buffer.seek(0)
-        img_base64 = base64.b64encode(buffer.getvalue()).decode()
-        
-        logging.info(f"✅ Brcode PIX gerado com sucesso: {chave_pix[:10]}... | Valor: R$ {valor}")
-        
-        return jsonify({
-            "status": "sucesso",
-            "qr_code_base64": f"data:image/png;base64,{img_base64}",
-            "brcode_texto": brcode_texto,
-            "chave_pix": chave_pix,
-            "valor": valor
-        }), 200
-        
-    except Exception as e:
-        logging.error(f"❌ Erro ao gerar Brcode PIX: {e}", exc_info=True)
-        return jsonify({
-            "status": "erro",
-            "mensagem": f"Erro ao gerar QR Code PIX: {str(e)}"
+            "mensagem": f"Erro ao enviar pedido via WhatsApp: {str(e)}"
         }), 500
 
 
@@ -1189,72 +993,46 @@ def gerar_brcode_pix():
 def ger_pedidos():
     if request.method == 'GET':
         try:
-            conn = mysql.get_connection()
-            cur = conn.cursor(dictionary=True)
-
-            data_inicio = request.args.get('data_inicio').strftime('%d/%m/%Y') if request.args.get('data_inicio') else None
-            data_fim = request.args.get('data_fim').strftime('%d/%m/%Y') if request.args.get('data_fim') else None
-
-            if data_inicio:
-                data_inicio = datetime.strptime(data_inicio,'%Y-%m-%d').strftime('%d/%m/%Y')
-            if data_fim:
-                data_fim = datetime.strptime(data_fim, '%Y-%m-%d').strftime('%d/%m/%Y')
-
-
-            query = """SELECT * FROM vw_pedidos_fin
-                    where date(dt_registro) <= curdate()
-                    
-            """  
+            cur = mysql.connection.cursor()
+            
+            # Captura os parâmetros de data
+            data_inicio = request.args.get('data_inicio')
+            data_fim = request.args.get('data_fim')
+            
+            # Query base 
+            query = "SELECT * FROM vw_pedidos_fin"
             params = []
-
+            
+            # Adiciona filtros se as datas forem fornecidas
             if data_inicio and data_fim:
                 query += " WHERE DATE(dt_registro) BETWEEN %s AND %s"
                 params = [data_inicio, data_fim]
             elif data_inicio:
-                
                 query += " WHERE DATE(dt_registro) >= %s"
                 params = [data_inicio]
             elif data_fim:
-                query += " WHERE DATE(dt_registro) <= %s" 
+                query += " WHERE DATE(dt_registro) <= %s"
                 params = [data_fim]
-
+            
             query += " ORDER BY dt_registro DESC"
-
+            
+            # Executa a query com ou sem parâmetros
             if params:
                 cur.execute(query, params)
             else:
                 cur.execute(query)
-
+                
             pedidos = cur.fetchall()
             cur.close()
 
             total_valor = sum([p['valor_total'] for p in pedidos])
-            qtde_total = len(set([p['id_pedido'] for p in pedidos]))
-            qtde_itens = sum([p['qtde'] for p in pedidos])
+            return render_template('ger_pedidos.html', pedidos=pedidos, total_valor=total_valor)
             
-
-            return render_template(
-                'ger_pedidos.html',
-                pedidos=pedidos,
-                total_valor=total_valor,
-                qtde_total=qtde_total, 
-                qtde_itens=qtde_itens,
-                
-            )
-
         except Exception as e:
             logging.error(f"❌ Erro ao buscar pedidos: {e}")
-            return render_template(
-                'ger_pedidos.html',
-                pedidos=[],
-                total_valor=0,     
-                qtde_total=0,
-                qtde_itens=0,
-                
-            )
-
-    return render_template('ger_pedidos.html', 
-    pedidos=[], total_valor=0, qtde_total=0, qtde_itens=0)
+            return render_template('ger_pedidos.html', pedidos=[])
+    
+    return render_template('ger_pedidos.html')
 
 
 @app.route('/pedidos_excel', methods=['GET'])
@@ -1264,7 +1042,7 @@ def pedidos_excel():
         logging.info("🚀 Iniciando geração do Excel...")
 
         # Cursor com DictCursor
-        conn = mysql.get_connection(); cur = conn.cursor(dictionary=True)
+        cur = mysql.connection.cursor(DictCursor)
         logging.info("✅ Cursor criado")
 
         # Buscar clientes
@@ -1366,7 +1144,7 @@ def pedidos_excel_clientes():
         logging.info("🚀 Iniciando geração do Excel...")
 
         # Cursor com DictCursor
-        conn = mysql.get_connection(); cur = conn.cursor(dictionary=True)
+        cur = mysql.connection.cursor(DictCursor)
         logging.info("✅ Cursor criado")
 
         # Buscar clientes
@@ -1459,37 +1237,18 @@ def pedidos_excel_clientes():
         logging.info("✅ Cursor fechado")
 
 
-@app.route('/nav_tabs', methods=['GET'])
-def nav_tabs():
-    try:
-        conn = mysql.get_connection()
-        cur = conn.cursor(dictionary=True)
-        cur.execute("SELECT DISTINCT subgrupo FROM tbl_prod ORDER BY subgrupo ASC")
-        subgrupos = cur.fetchall()
-
-    except Exception as e:
-        logging.error(f"❌ Erro ao buscar subgrupos: {e}")
-        subgrupos = []
-
-    finally:
-        if cur:
-            cur.close()
-
-    return render_template('nav_tabs.html', subgrupos=subgrupos)    
-
 @app.route('/subgrupo/<string:subgrupo>', methods=['GET'])
 def grupo(subgrupo):
+    cur = mysql.connection.cursor(dictionary=True)
     try:
-        conn = mysql.get_connection()
-        cur = conn.cursor(dictionary=True)
-        
         # Buscar produtos do subgrupo selecionado
         cur.execute("SELECT * FROM tbl_prod WHERE subgrupo = %s AND ativo = 1 ORDER BY created_at DESC", (subgrupo,))
         produtos = cur.fetchall()
         
         # Buscar todos os subgrupos para o filtro
-        cur.execute("SELECT DISTINCT subgrupo FROM tbl_prod WHERE ativo = 1 ORDER BY subgrupo ASC")
-        subgrupos = cur.fetchall()
+        cur.execute("SELECT DISTINCT subgrupo FROM tbl_prod ORDER BY subgrupo ASC")
+        subgrupos_raw = cur.fetchall()
+        subgrupos = [{"subgrupo": s['subgrupo']} for s in subgrupos_raw] if subgrupos_raw else []
 
     except Exception as e:
         logging.error(f"❌ Erro ao buscar produtos do grupo: {e}")
@@ -1501,144 +1260,3 @@ def grupo(subgrupo):
             cur.close()
 
     return render_template('index.html', produtos=produtos, subgrupos=subgrupos, subgrupo_selecionado=subgrupo)
-
-@app.route('/pedidos_cliente', methods=['GET', 'POST'])
-def pedidos_cliente():
-    cur = None
-    try:
-        conn = mysql.get_connection()
-        cur = conn.cursor(dictionary=True)
-        
-        # ✅ Buscar apenas as colunas necessárias para o JavaScript
-        cur.execute("SELECT id_prod, nome_prod, valor FROM tbl_prod WHERE ativo = 1 ORDER BY nome_prod ASC")
-        produtos = cur.fetchall()
-        
-        # ✅ Buscar clientes
-        cur.execute("SELECT id_cliente, nome_cliente FROM tbl_cliente ORDER BY nome_cliente ASC")
-        clientes = cur.fetchall()
-        
-        print(f"✅ Produtos carregados: {len(produtos)}")
-        print(f"📦 Primeiro produto: {produtos[0] if produtos else 'Nenhum'}")
-        
-        return render_template('pedidos_cliente.html', produtos=produtos, clientes=clientes)
-    except Exception as e:
-        logging.error(f"❌ Erro ao buscar produtos para pedidos: {e}")
-        print(f"❌ ERRO: {e}")
-        return render_template('pedidos_cliente.html', produtos=[], clientes=[])
-    finally:
-        if cur:
-            cur.close()
-
-
-@app.route('/imprimirSelecionados', methods=['POST'])
-def imprimirSelecionados():
-    ids = request.json.get('pedidos')
-
-    # Buscar pedidos no banco
-    pedidos = buscar_pedidos(ids)
-
-    return render_template('imprimirSelecionados.html', pedidos=pedidos)
-
-
-@app.route('/entregadores', methods=['GET', 'POST'])
-def entregadores():
-    cur = None
-    try:
-        conn = mysql.get_connection(); cur = conn.cursor(dictionary=True)
-        
-        if request.method == 'GET':
-            cur.execute("SELECT * FROM tbl_entregadores")
-            entregadores = cur.fetchall()
-            return render_template('entregadores.html', entregadores=entregadores)
-
-        elif request.method == 'POST':
-            dados = request.form
-            cur.execute("""
-CREATE TABLE IF NOT EXISTS tbl_entregadores (
-    id_entregador INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    nome_entregador VARCHAR(100),
-    habilitacao VARCHAR(50),
-    tipo_cnh enum('A', 'B', 'C', 'D', 'E', 'AB','ACC') NOT NULL,
-    validade_cnh DATE,
-    endereco VARCHAR(200),
-    bairro VARCHAR(50),
-    cidade VARCHAR(50),
-    uf VARCHAR(50),
-    telefone VARCHAR(50),
-    veiculo VARCHAR(50),
-    ano_veiculo INT,
-    cor VARCHAR(50),
-    placa VARCHAR(20),
-    ativo TINYINT DEFAULT 1,
-    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-)
-""")
-            cur.execute("""
-INSERT INTO tbl_entregadores (nome_entregador, habilitacao, tipo_cnh, validade_cnh, endereco, bairro, cidade, uf, telefone, veiculo, ano_veiculo, cor, placa)
-VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
-""", (
-    dados.get('nome_entregador'),
-    dados.get('habilitacao'),
-    dados.get('tipo_cnh'),
-    dados.get('validade_cnh'),
-    dados.get('endereco'),
-    dados.get('bairro'),
-    dados.get('cidade'),
-    dados.get('uf'),
-    dados.get('telefone'),
-    dados.get('veiculo'),
-    dados.get('ano_veiculo'),
-    dados.get('cor'),
-    dados.get('placa')
-))
-    
-            conn.commit()
-            logging.info(f"✅ Entregador cadastrado: {dados.get('nome_entregador')}")
-            return redirect(url_for('entregadores'))
-
-    except Exception as e:
-        logging.error(f"❌ Erro na rota /entregadores: {e}")
-        if conn is not None:
-            conn.rollback()
-        return jsonify({"error": str(e)}), 500
-    finally:
-        if cur:
-            cur.close()
-
-# Criar uma rota para dar baixa nos pedidos enviados.
-
-# Substitua sua rota atual por esta:
-@app.route('/atualizar_status_pedido', methods=['POST'])
-def atualizar_status_pedido():
-    try:
-        dados       = request.get_json(force=True, silent=True)
-        id_pedido   = dados.get('id_pedido')
-        novo_status = dados.get('status')
-
-        status_validos = ['Pendente', 'Em producao', 'Cancelado', 'Finalizado']
-        if novo_status not in status_validos:
-            return jsonify({'sucesso': False, 'erro': 'Status inválido'}), 400
-
-        conn = mysql.get_connection()
-        cur  = conn.cursor()
-        cur.execute(
-            "UPDATE tbl_detalhes_pedido SET status_pedido = %s WHERE id_pedido = %s",
-            (novo_status, id_pedido)
-        )
-        conn.commit()
-        cur.close()
-
-        return jsonify({'sucesso': True})
-
-    except Exception as e:
-        logging.error(f"❌ Erro ao atualizar status: {e}")
-        return jsonify({'sucesso': False, 'erro': str(e)}), 500
-
-@app.route('/dashboard',methods=['GET'])
-def dashboard():
-
-    return render_template('dashboard.html')
-
-if __name__ == '__main__':
-    # ✅ Corrigido: Adicionado host='0.0.0.0' para permitir conexões externas (IP da rede)
-    app.run(host='0.0.0.0', port=5000, debug=True)

@@ -60,7 +60,7 @@
 **Nova versão:**
 - ✅ Recebe dados do pedido
 - ✅ Formata mensagem
-- ✅ Gera link `https://wa.me/5582981090042?text=...`
+- ✅ Gera link `https://wa.me/5582988663902?text=...`
 - ✅ Retorna URL para frontend
 - ✅ Atualiza status no banco
 - ✅ Retorna resposta JSON com `url_whatsapp`
