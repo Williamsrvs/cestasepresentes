@@ -54,7 +54,9 @@ class Config:
     # Configurações do Flask
     # ✅ Corrigido: Garantindo que sempre haja uma SECRET_KEY para evitar o erro ValueError no Railway
     SECRET_KEY = os.getenv('SECRET_KEY', 'Ccap2004@-service-tour')
- 
+    SQLALCHEMY_DATABASE_URI = 'mysql+mysqlconnector://{user}:{password}@{host}:{port}/{database}'.format(**db_config)    
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+
 
     DEBUG = os.getenv('FLASK_ENV', 'development') == 'development'
     UPLOAD_FOLDER = os.getenv('UPLOAD_FOLDER', 'static/uploads')
