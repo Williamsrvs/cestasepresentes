@@ -9,7 +9,7 @@ print("="*60)
 config_atual = {
     'host': 'auth-db1937.hstgr.io',
     'user': 'u799109175_cestas_present',
-    'passwd': 'Ccap2004',
+    'passwd': 'Q1k2v1y5@2025',
     'db': 'u799109175_cestas_present',
     'port': 3306,
     'connect_timeout': 10
