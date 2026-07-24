@@ -54,7 +54,7 @@ class Config:
     # Configurações do Flask
     # ✅ Corrigido: Garantindo que sempre haja uma SECRET_KEY para evitar o erro ValueError no Railway
     SECRET_KEY = os.getenv('SECRET_KEY', 'Ccap2004@-service-tour')
-    SQLALCHEMY_DATABASE_URI = 'mysql+mysqlconnector://{user}:{password}@{host}:{port}/{database}'.format(**db_config)    
+    SQLALCHEMY_DATABASE_URI = f"mysql+mysqlconnector://{db_config['user']}:{db_config['password']}@{db_config['host']}:{db_config['port']}/{db_config['database']}"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 
