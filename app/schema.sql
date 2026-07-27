@@ -274,3 +274,36 @@ SELECT
     SUM(pe.valor_total) AS total_pedidos
 FROM u799109175_cestas_present.tbl_pedidos_financeiro pe
 GROUP BY pe.status_pedido;
+
+
+CREATE TABLE u799109175_cestas_present.tbl_plano_contas (
+  id_pl_contas INT PRIMARY KEY AUTO_INCREMENT,
+  dt_registro DATE NOT NULL,
+  tipo ENUM('RECEITA','DESPESA') NOT NULL,
+  tipo_conta VARCHAR(255),
+  indicador_receita TINYINT(1) GENERATED ALWAYS AS (
+    CASE 
+      WHEN tipo = 'RECEITA' THEN 1 
+      ELSE 0 
+    END
+  ) STORED,
+  descricao_concat VARCHAR(300) GENERATED ALWAYS AS (
+    CONCAT('1.0.', indicador_receita, ','id_pl_contas, ' - ', tipo_conta)
+  ) STORED
+);
+
+
+CREATE TABLE u799109175_cestas_present.tbl_cad_contas (
+  id_cad_contas INT PRIMARY KEY AUTO_INCREMENT,
+  id_pl_contas INT NOT NULL,
+  dt_registro DATE NOT NULL DEFAULT (CURRENT_DATE),
+  dt_vencimento DATE NOT NULL,
+  tipo_conta ENUM('RECEITA','DESPESA') NOT NULL,
+  descricao VARCHAR(255),
+  valor DECIMAL(10,2),
+  desconto DECIMAL(10,2),
+  saldo_final DECIMAL(10,2) GENERATED ALWAYS AS (valor - desconto) STORED,
+  status ENUM('ABERTO','PAGO','CANCELADO','VENCIDO') NOT NULL,
+  observacoes VARCHAR(300),
+  FOREIGN KEY (id_pl_contas) REFERENCES u799109175_cestas_present.tbl_plano_contas(id_pl_contas)
+);

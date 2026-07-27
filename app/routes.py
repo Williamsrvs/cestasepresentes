@@ -1639,6 +1639,150 @@ def dashboard():
 
     return render_template('dashboard.html')
 
+
+@app.route('/plano_contas', methods=['POST', 'GET'])
+def plano_contas():
+
+    conn = None
+    cur = None
+    try:
+        conn = mysql.get_connection()
+        cur = conn.cursor(dictionary=True)
+
+        if request.method == 'POST':
+            dados = request.form
+
+            cur.execute("""
+                INSERT INTO tbl_plano_contas (dt_registro, tipo, tipo_conta)
+                VALUES (%s, %s, %s)
+            """, (
+                dados.get('dt_registro'),
+                dados.get('tipo'),
+                dados.get('tipo_conta'),
+            ))
+
+            conn.commit()
+            logging.info(f"✅ Plano de contas cadastrado: {dados.get('tipo_conta')}")
+            return redirect(url_for('plano_contas'))
+
+    except Exception as e:
+        logging.error(f"❌ Erro na rota /plano_contas: {e}")
+        if conn is not None:
+            conn.rollback()
+        return jsonify({"error": str(e)}), 500
+    finally:
+        if cur:
+            cur.close()
+
+    return render_template('plano_contas.html')
+
+"""
+CREATE TABLE IF NOT EXISTS u799109175_cestas_present.tbl_plano_contas (
+    id_pl_contas INT PRIMARY KEY AUTO_INCREMENT,
+    dt_registro DATE NOT NULL,
+    tipo ENUM('RECEITA','DESPESA') NOT NULL,
+    tipo_conta VARCHAR(255),
+    indicador_receita TINYINT(1) GENERATED ALWAYS AS (
+        CASE
+            WHEN tipo = 'RECEITA' THEN 1
+            ELSE 0
+        END
+    ) STORED,
+    descricao_concat VARCHAR(300) GENERATED ALWAYS AS (
+        CONCAT('1.0.', indicador_receita, ' - ', tipo_conta)
+    ) STORED
+);
+""" 
+
+def buscar_plano_contas(conn):
+    """Busca as contas do plano de contas, retornando lista vazia em caso de erro."""
+    try:
+        cur = conn.cursor(dictionary=True)
+        cur.execute("""
+            SELECT id_pl_contas, descricao_concat, tipo
+            FROM tbl_plano_contas
+            ORDER BY descricao_concat
+        """)
+        resultado = cur.fetchall()
+        cur.close()
+        return resultado
+    except Exception as e:
+        logging.error(f"❌ Erro ao buscar plano de contas: {e}")
+        return []
+
+
+@app.route('/cad_financeiro', methods=['POST', 'GET'])
+def cad_financeiro():
+
+    conn = None
+    cur = None
+    erro = None
+    sucesso = None
+
+    try:
+        conn = mysql.get_connection()
+
+        if request.method == 'POST':
+            dados = request.form
+            cur = conn.cursor(dictionary=True)
+
+            # Busca o tipo (RECEITA/DESPESA) da conta selecionada no plano de contas
+            cur.execute(
+                "SELECT tipo FROM tbl_plano_contas WHERE id_pl_contas = %s",
+                (dados.get('id_pl_contas'),)
+            )
+            conta_selecionada = cur.fetchone()
+            if not conta_selecionada:
+                raise ValueError("Conta do plano de contas inválida.")
+
+            tipo_conta = conta_selecionada['tipo']  # 'RECEITA' ou 'DESPESA'
+
+            cur.execute("""
+                INSERT INTO tbl_cad_contas (
+                    id_pl_contas,
+                    dt_registro,
+                    dt_vencimento,
+                    tipo_conta,
+                    descricao,
+                    valor,
+                    desconto,
+                    status,
+                    observacoes
+                )
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """, (
+                dados.get('id_pl_contas'),
+                dados.get('dt_registro'),
+                dados.get('dt_vencimento'),
+                tipo_conta,
+                dados.get('descricao'),
+                dados.get('valor'),
+                dados.get('desconto') or 0,
+                dados.get('status'),
+                dados.get('observacoes'),
+            ))
+
+            conn.commit()
+            logging.info(f"✅ Plano de contas cadastrado: {dados.get('descricao')}")
+            sucesso = "Conta cadastrada com sucesso!"
+
+    except Exception as e:
+        logging.error(f"❌ Erro na rota /cad_financeiro: {e}")
+        if conn is not None:
+            conn.rollback()
+        erro = str(e)
+
+    finally:
+        if cur:
+            cur.close()
+
+    plano_contas = buscar_plano_contas(conn) if conn else []
+
+    if conn:
+        conn.close()
+
+    return render_template('cad_financeiro.html', plano_contas=plano_contas, erro=erro, sucesso=sucesso)
+
 if __name__ == '__main__':
     # ✅ Corrigido: Adicionado host='0.0.0.0' para permitir conexões externas (IP da rede)
     app.run(host='0.0.0.0', port=5000, debug=True)
