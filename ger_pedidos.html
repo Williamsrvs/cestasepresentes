@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>👤 Gerenciamento de Pedidos</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, rgba(67, 97, 238, 0.15) 0%, rgba(76, 201, 240, 0.15) 100%),
+                        url('https://raw.githubusercontent.com/Williamsrvs/img_catalogodigital/refs/heads/main/imagem%202.png') no-repeat center center fixed;
+            background-size: cover;
+            background-blend-mode: overlay;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            animation: fadeInDown 0.6s ease;
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #546e7a;
+            font-size: 1.1rem;
+        }
+
+        .container_data {
+            max-width: 1800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+            padding: 10px;
+            animation: fadeInUp 0.6s ease;
+        }
+
+        .filter-section {
+            background: linear-gradient(135deg, #e85d04 0%, #c84e00 100%);
+            padding: 40px 10px;
+            border-radius: 12px;
+            margin-bottom: 60px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .filter-section h3 {
+            color: white;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .filter-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            align-items: end;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            color: white;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .form-group input {
+            padding: 10px 12px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 8px;
+            font-size: 1rem;
+            background: rgba(255,255,255,0.95);
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: white;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(255,255,255,0.2);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 8px 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: white;
+            color: #667eea;
+            flex: 1;
+        }
+
+        .btn-primary:hover {
+            background: #f8f9fa;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid white;
+            flex: 1;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 15px 0;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .stats-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 15px;
+            background: #eec476;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #020127;
+            justify-content: center;
+        }
+
+        .stat-item i {
+            color: #667eea;
+        }
+
+        .stat-number {
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        thead {
+            background: linear-gradient(135deg, #e85d04 0%, #c84e00 100%);
+        }
+
+        thead th {
+            padding: 18px 15px;
+            text-align: left;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.952);
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid #e0e0e0;
+            transition: all 0.3s ease;
+        }
+
+        tbody tr:hover {
+            background: #f8f9ff;
+            transform: scale(1.01);
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
+        }
+
+        tbody td {
+            padding: 16px 15px;
+            color: #37474f;
+            font-size: 0.95rem;
+        }
+
+        tbody tr:last-child {
+            border-bottom: none;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 60px 20px;
+            color: #90a4ae;
+        }
+
+        .no-data i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+
+        .no-data h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        .no-data p {
+            font-size: 1rem;
+        }
+
+        /* ===== SELECT STATUS ===== */
+        .status-select {
+            padding: 6px 10px;
+            border-radius: 20px;
+            border: 2px solid transparent;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            outline: none;
+            appearance: none;
+            -webkit-appearance: none;
+            text-align: center;
+            min-width: 140px;
+        }
+
+        .status-select:hover {
+            transform: scale(1.04);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+        }
+
+        .status-select.status-pendente {
+            background: #fff3cd;
+            color: #856404;
+            border-color: #ffc107;
+        }
+
+        .status-select.status-em-producao {
+            background: #cce5ff;
+            color: #004085;
+            border-color: #004085;
+        }
+
+        .status-select.status-cancelado {
+            background: #f8d7da;
+            color: #721c24;
+            border-color: #dc3545;
+        }
+
+        .status-select.status-finalizado {
+            background: #d4edda;
+            color: #155724;
+            border-color: #28a745;
+        }
+
+        /* ===== TOAST DE FEEDBACK ===== */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 12px 22px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: white;
+            z-index: 9999;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.4s ease;
+            pointer-events: none;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .toast.sucesso { background: #28a745; }
+        .toast.erro    { background: #dc3545; }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 { font-size: 2rem; }
+            .filter-controls { grid-template-columns: 1fr; }
+            .btn-group { flex-direction: column; }
+            .stats-bar { flex-direction: column; gap: 15px; align-items: flex-start; }
+            .stats-info { flex-wrap: wrap; }
+            .container_data { padding: 20px; }
+            table { font-size: 0.85rem; }
+            thead th, tbody td { padding: 12px 10px; }
+        }
+    </style>
+
+    <div class="header">
+        <h1>👤 Gerenciamento de Pedidos</h1>
+        <p>Consulte e filtre seus Pedidos cadastrados</p>
+    </div>
+
+    <div class="container_data">
+        <div class="filter-section">
+            <h3>
+                <i class="fas fa-filter"></i>
+                Filtros de Pesquisa
+            </h3>
+            <form method="GET" action="/ger_pedidos">
+                <div class="filter-controls">
+                    <div class="form-group">
+                        <label for="data_inicio">
+                            <i class="fas fa-calendar-alt"></i>
+                            Data Inicial
+                        </label>
+                        <input type="date" id="data_inicio" name="data_inicio" value="{{ request.args.get('data_inicio', '') }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="data_fim">
+                            <i class="fas fa-calendar-check"></i>
+                            Data Final
+                        </label>
+                        <input type="date" id="data_fim" name="data_fim" value="{{ request.args.get('data_fim', '') }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="numero_pedido">
+                            <i class="fas fa-hashtag"></i>
+                            Nº Pedido
+                        </label>
+                        <input type="text" id="numero_pedido" name="numero_pedido" placeholder="Digite o nº do pedido" onkeyup="filtrarPorNumeroPedido()">
+                    </div>
+                    <div class="btn-group">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i>
+                            Filtrar
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="window.location.href='/pedidos_excel'">
+                            <i class="fas fa-file-excel"></i>
+                            Excel
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="limparFiltros()">
+                            <i class="fas fa-times"></i>
+                            Limpar
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="stats-bar">
+            <div class="stats-info">
+                <div class="stat-item">
+                    <i class="fas fa-money-check"></i>
+                    <span>Total R$ Apurado:
+                        <span class="stat-number">R$ {{ total_valor }}</span>
+                    </span>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-users"></i>
+                    <span>Total de Linhas Processadas: <span class="stat-number">{{ pedidos|length }}</span></span>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-boxes"></i>
+                    <span>Total de Itens Processados: <span class="stat-number">{{ qtde_itens }}</span></span>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-clock"></i>
+                    <span id="ultima-atualizacao"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-wrapper">
+            <button class="btn btn-primary" onclick="window.location.href='/lojista'">
+                <i class="fas fa-arrow-left"></i>
+                Retornar
+            </button>
+
+            <button class="btn btn-primary" onclick="imprimirPedidosSelecionados()">
+                <i class="fas fa-print"></i>
+                Imprimir Pedidos Selecionados
+            </button>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th><i class="fas fa-box"></i> Nº Pedido</th>
+                        <th><i class="fas fa-calendar-alt"></i> Data Pedido</th>
+                        <th><i class="fas fa-user"></i> Nome Cliente</th>
+                        <th><i class="fas fa-location-arrow"></i> Endereço</th>
+                        <th><i class="fas fa-map-marker-alt"></i> Bairro</th>
+                        <th><i class="fas fa-credit-card"></i> Forma Pgmto</th>
+                        <th><i class="fas fa-barcode"></i> Quantidade</th>
+                        <th><i class="fas fa-money-check"></i> R$ Taxa Entrega</th>
+                        <th><i class="fas fa-money-check"></i> R$ Total</th>
+                        <th><i class="fas fa-concierge-bell"></i> Tipo Serviço</th>
+                        <th><i class="fas fa-phone"></i> Telefone</th>
+                        <th><i class="fas fa-product-hunt"></i> Produto</th>
+                        <th><i class="fas fa-check-square"></i> Selecione</th>
+                        <th><i class="fas fa-tasks"></i> Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if pedidos %}
+                        {% for pedido in pedidos %}
+                        <tr>
+                            <td>{{ pedido.id_pedido }}</td>
+                            <td>{{ pedido.dt_registro }}</td>
+                            <td>{{ pedido.nome_cliente }}</td>
+                            <td>{{ pedido.endereco }}</td>
+                            <td>{{ pedido.bairro }}</td>
+                            <td>{{ pedido.form_pgmto }}</td>
+                            <td>{{ pedido.qtde }}</td>
+                            <td>{{ pedido.tx_entrega }}</td>
+                            <td>{{ pedido.valor_total }}</td>
+                            <td>{{ pedido.tipo_consumo }}</td>
+                            <td>{{ pedido.telefone }}</td>
+                            <td>{{ pedido.nome_prod }}</td>
+                            <td><input type="checkbox" name="pedidos" value="{{ pedido.id_pedido }}"></td>
+                            <td>
+                                <select class="status-select status-{{ pedido.status_pedido | lower | replace(' ', '-') }}"
+                                        onchange="atualizarStatus(this, '{{ pedido.id_pedido }}')">
+                                    <option value="Pendente"    {% if pedido.status_pedido == 'Pendente' %}selected{% endif %}>⏳ Pendente</option>
+                                    <option value="Em producao" {% if pedido.status_pedido == 'Em producao' %}selected{% endif %}>🔧 Em Produção</option>
+                                    <option value="Cancelado"   {% if pedido.status_pedido == 'Cancelado' %}selected{% endif %}>❌ Cancelado</option>
+                                    <option value="Finalizado"  {% if pedido.status_pedido == 'Finalizado' %}selected{% endif %}>✅ Finalizado</option>
+                                </select>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="12" class="no-data">
+                                <i class="fas fa-inbox"></i>
+                                <h3>Nenhum pedido encontrado</h3>
+                                <p>Não há pedidos cadastrados no sistema ou que correspondam aos filtros aplicados.</p>
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Toast de feedback -->
+    <div id="toast-status" class="toast"></div>
+
+    <script>
+        // ===== FUNÇÃO: Limpar Filtros =====
+        function limparFiltros() {
+            document.getElementById('numero_pedido').value = '';
+            filtrarPorNumeroPedido();
+            window.location.href = '/ger_pedidos';
+        }
+
+        // ===== FUNÇÃO: Atualizar Hora =====
+        function atualizarHora() {
+            const agora = new Date();
+            const hora = agora.toLocaleTimeString('pt-BR');
+            document.getElementById('ultima-atualizacao').textContent = `Atualizado às ${hora}`;
+        }
+
+        atualizarHora();
+        setInterval(atualizarHora, 60000);
+
+        // ===== FUNÇÃO: Filtrar por Número de Pedido =====
+        function filtrarPorNumeroPedido() {
+            const numeroPedido = document.getElementById('numero_pedido').value.toLowerCase().trim();
+            const linhas = document.querySelectorAll('tbody tr');
+            let totalVisivel = 0;
+
+            linhas.forEach((linha) => {
+                if (linha.querySelector('.no-data')) return;
+
+                const idPedido = linha.cells[0].textContent.trim().toLowerCase();
+
+                if (idPedido.includes(numeroPedido) || numeroPedido === '') {
+                    linha.style.display = '';
+                    if (numeroPedido !== '') totalVisivel++;
+                } else {
+                    linha.style.display = 'none';
+                }
+            });
+
+            if (numeroPedido !== '' && totalVisivel === 0) {
+                const tbody = document.querySelector('tbody');
+                if (!tbody.querySelector('.filtro-vazio')) {
+                    const tr = document.createElement('tr');
+                    tr.classList.add('filtro-vazio');
+                    tr.innerHTML = `<td colspan="12" class="no-data">
+                        <i class="fas fa-search"></i>
+                        <h3>Nenhum pedido encontrado</h3>
+                        <p>Não há pedidos com o número: ${document.getElementById('numero_pedido').value}</p>
+                    </td>`;
+                    tbody.appendChild(tr);
+                }
+            } else {
+                const mensagem = document.querySelector('.filtro-vazio');
+                if (mensagem) mensagem.remove();
+            }
+        }
+
+        // ===== FUNÇÃO: Atualizar Status do Pedido =====
+        async function atualizarStatus(selectEl, idPedido) {
+            const novoStatus = selectEl.value;
+
+            // Mapeia o valor para a classe CSS correspondente
+            const mapaClasse = {
+                'Pendente':    'status-pendente',
+                'Em producao': 'status-em-producao',
+                'Cancelado':   'status-cancelado',
+                'Finalizado':  'status-finalizado'
+            };
+
+            // Atualiza a cor imediatamente (UX responsivo)
+            selectEl.className = 'status-select ' + (mapaClasse[novoStatus] || '');
+
+            try {
+                const response = await fetch('/atualizar_status_pedido', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id_pedido: idPedido, status: novoStatus })
+                });
+
+                const data = await response.json();
+
+                if (data.sucesso) {
+                    mostrarToast('✅ Status atualizado com sucesso!', 'sucesso');
+                } else {
+                    mostrarToast('❌ Erro ao atualizar status.', 'erro');
+                }
+            } catch (err) {
+                mostrarToast('❌ Falha na conexão.', 'erro');
+            }
+        }
+
+        // ===== FUNÇÃO: Exibir Toast de Feedback =====
+        function mostrarToast(mensagem, tipo) {
+            const toast = document.getElementById('toast-status');
+            toast.textContent = mensagem;
+            toast.className = `toast ${tipo} show`;
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // ===== FUNÇÃO: Imprimir Pedidos Selecionados =====
+        // ===== FUNÇÃO: Imprimir Pedidos Selecionados =====
+        // Índices das colunas:
+        // 0=id_pedido | 1=dt_registro | 2=nome_cliente | 3=endereco | 4=bairro
+        // 5=form_pgmto | 6=qtde | 7=valor_total | 8=tipo_consumo | 9=telefone
+        // 10=nome_prod | 11=checkbox  | 12=select status
+
+
+        function imprimirPedidosSelecionados() {
+    const pedidosSelecionados = document.querySelectorAll('input[name="pedidos"]:checked');
+
+    if (pedidosSelecionados.length === 0) {
+        alert('Selecione pelo menos um pedido para imprimir.');
+        return;
+    }
+
+    // Agrupa produtos pelo id_pedido
+    const pedidosAgrupados = {};
+
+    pedidosSelecionados.forEach((checkbox) => {
+        const idPedido = checkbox.value;
+        const linha    = checkbox.closest('tr');
+
+        // Índices: 0=id | 1=data | 2=cliente | 3=end | 4=bairro | 5=pgmto
+        //          6=qtde | 7=tx_entrega | 8=valor_total | 9=tipo_consumo
+        //          10=telefone | 11=nome_prod | 12=checkbox | 13=status
+        const nome_prod   = linha.cells[11].textContent.trim();
+        const qtde        = linha.cells[6].textContent.trim();
+        const valor_total = linha.cells[8].textContent.trim();
+        const tx_entrega  = linha.cells[7].textContent.trim();
+
+        if (!pedidosAgrupados[idPedido]) {
+            pedidosAgrupados[idPedido] = {
+                id_pedido:    idPedido,
+                dt_registro:  linha.cells[1].textContent.trim(),
+                nome_cliente: linha.cells[2].textContent.trim(),
+                endereco:     linha.cells[3].textContent.trim(),
+                bairro:       linha.cells[4].textContent.trim(),
+                form_pgmto:   linha.cells[5].textContent.trim(),
+                tipo_consumo: linha.cells[9].textContent.trim(),
+                telefone:     linha.cells[10].textContent.trim(),
+                tx_entrega:   tx_entrega,
+                produtos: []
+            };
+        }
+
+        pedidosAgrupados[idPedido].produtos.push({ nome_prod, qtde, valor_total });
+    });
+
+    // ✅ Tudo dentro do forEach — bug principal corrigido
+    Object.values(pedidosAgrupados).forEach((pedido) => {
+
+        // Soma subtotal dos produtos
+        const subtotal = pedido.produtos.reduce((acc, p) => {
+            return acc + (parseFloat(p.valor_total.replace(',', '.')) || 0);
+        }, 0);
+
+        // Taxa de entrega: R$ 6,00 fixo se Delivery
+        const isDelivery   = pedido.tipo_consumo.toLowerCase() === 'delivery';
+        const valorTaxa    = isDelivery ? 15.00 : 0;
+        const totalGeral   = (subtotal + valorTaxa).toFixed(2).replace('.', ',');
+        const subtotalFmt  = subtotal.toFixed(2).replace('.', ',');
+        const taxaFmt      = valorTaxa.toFixed(2).replace('.', ',');
+
+        // Monta linhas de itens — Bug 2 corrigido (nome_prod na coluna 11)
+        let linhasItens = '';
+        pedido.produtos.forEach((p) => {
+            linhasItens += `
+                <div class="item-linha">
+                    <span class="item-desc">${p.nome_prod}</span>
+                    <span class="item-qtde">${p.qtde}</span>
+                    <span class="item-total">R$ ${p.valor_total}</span>
+                </div>`;
+        });
+
+        const horaImpressao = new Date().toLocaleString('pt-BR');
+        const janela = window.open('', '_blank', 'width=340,height=720');
+
+        janela.document.write(`
+            <!DOCTYPE html>
+            <html lang="pt-BR">
+            <head>
+                <meta charset="UTF-8">
+                <title>Cupom #${pedido.id_pedido}</title>
+                <style>
+                    @page { size: 80mm auto; margin: 0; }
+                    @media print {
+                        body { width: 80mm; }
+                        .no-print { display: none !important; }
+                    }
+                    * { margin: 0; padding: 0; box-sizing: border-box; }
+                    body {
+                        font-family: 'Courier New', Courier, monospace;
+                        font-size: 11px;
+                        width: 80mm;
+                        background: white;
+                        color: #000;
+                        padding: 4mm 4mm 8mm 4mm;
+                    }
+                    .cupom-header { text-align: center; border-bottom: 1px dashed #000; padding-bottom: 6px; margin-bottom: 6px; }
+                    .loja-nome { font-size: 14px; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; }
+                    .loja-info { font-size: 9px; line-height: 1.6; margin-top: 3px; }
+                    .pedido-numero { text-align: center; font-size: 13px; font-weight: bold; border: 1px solid #000; padding: 4px; margin: 6px 0; letter-spacing: 2px; }
+                    .tipo-consumo { text-align: center; font-size: 10px; font-weight: bold; background: #000; color: #fff; padding: 3px 6px; margin-bottom: 6px; text-transform: uppercase; }
+                    .secao { border-bottom: 1px dashed #000; padding: 5px 0; margin-bottom: 5px; }
+                    .secao-titulo { font-size: 9px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+                    .linha-dado { display: flex; justify-content: space-between; font-size: 10px; line-height: 1.7; gap: 4px; }
+                    .linha-dado .label { color: #444; white-space: nowrap; }
+                    .linha-dado .valor { font-weight: bold; text-align: right; word-break: break-word; }
+                    .itens-header { display: flex; justify-content: space-between; font-size: 9px; font-weight: bold; text-transform: uppercase; border-bottom: 1px solid #000; padding-bottom: 3px; margin-bottom: 3px; }
+                    .item-linha { display: flex; justify-content: space-between; font-size: 10px; padding: 4px 0; border-bottom: 1px dotted #aaa; }
+                    .item-desc { flex: 1; padding-right: 4px; }
+                    .item-qtde { width: 20px; text-align: center; }
+                    .item-total { width: 28mm; text-align: right; font-weight: bold; }
+                    .total-box { border-top: 2px solid #000; margin-top: 6px; padding-top: 5px; }
+                    .total-linha { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 3px; }
+                    .total-linha.destaque { font-size: 13px; font-weight: bold; letter-spacing: 1px; border-top: 1px dashed #000; padding-top: 4px; margin-top: 4px; }
+                    .total-pgmto { font-size: 10px; margin-top: 4px; color: #333; }
+                    .cupom-footer { text-align: center; margin-top: 8px; padding-top: 6px; border-top: 1px dashed #000; font-size: 9px; line-height: 1.8; color: #333; }
+                    .cupom-footer .obrigado { font-size: 11px; font-weight: bold; color: #000; margin-bottom: 2px; }
+                    .btn-imprimir { display: block; width: 100%; margin-top: 12px; padding: 10px; background: #000; color: white; border: none; font-family: 'Courier New', monospace; font-size: 12px; font-weight: bold; cursor: pointer; letter-spacing: 2px; text-transform: uppercase; }
+                </style>
+            </head>
+            <body>
+                <div class="cupom-header">
+                    <div class="loja-nome">🎁 LP Cestas e Presentes</div>
+                    <div class="loja-info">
+                        Rua B 44, Qd B 44 - Benedito Bentes 1 <br>
+                        CEP: 57085-736 - Maceió/Al<br>
+                        Tel: (82) 98866-3902
+                    </div>
+                </div>
+
+                <div class="pedido-numero">★ PEDIDO Nº ${pedido.id_pedido} ★</div>
+                <div class="tipo-consumo">${pedido.tipo_consumo || 'Consumo no Local'}</div>
+
+                <div class="secao">
+                    <div class="secao-titulo">▸ Dados do Cliente</div>
+                    <div class="linha-dado"><span class="label">Cliente :</span><span class="valor">${pedido.nome_cliente}</span></div>
+                    <div class="linha-dado"><span class="label">Telefone:</span><span class="valor">${pedido.telefone}</span></div>
+                    ${pedido.endereco ? `<div class="linha-dado"><span class="label">Endereço:</span><span class="valor">${pedido.endereco}${pedido.bairro ? ' - ' + pedido.bairro : ''}</span></div>` : ''}
+                    <div class="linha-dado"><span class="label">Data    :</span><span class="valor">${pedido.dt_registro}</span></div>
+                </div>
+
+                <div class="secao">
+                    <div class="secao-titulo">▸ Itens do Pedido</div>
+                    <div class="itens-header">
+                        <span class="item-desc">Produto</span>
+                        <span class="item-qtde">Qtd</span>
+                        <span class="item-total">Total</span>
+                    </div>
+                    ${linhasItens}
+                </div>
+
+                <div class="total-box">
+                    <div class="total-linha">
+                        <span>Subtotal</span>
+                        <span>R$ ${subtotalFmt}</span>
+                    </div>
+                    ${isDelivery ? `
+                    <div class="total-linha">
+                        <span>Taxa de Entrega</span>
+                        <span>R$ ${taxaFmt}</span>
+                    </div>` : ''}
+                    <div class="total-linha destaque">
+                        <span>TOTAL A PAGAR</span>
+                        <span>R$ ${totalGeral}</span>
+                    </div>
+                    <div class="total-pgmto">Forma de Pagamento: ${pedido.form_pgmto}</div>
+                </div>
+
+                <div class="cupom-footer">
+                    <div class="obrigado">Obrigado pela preferência!</div>
+                    <div>Impresso em: ${horaImpressao}</div>
+                    <div>- - - - - - - - - - - - - - - - -</div>
+                    <div>** Documento sem valor fiscal **</div>
+                    <div>** Sistema Pedido Certo **</div>
+                </div>
+
+                <button class="btn-imprimir no-print" onclick="window.print(); window.close();">
+                    🖨️ Imprimir Cupom
+                </button>
+            </body>
+            </html>`);
+
+        janela.document.close();
+        setTimeout(() => { janela.focus(); janela.print(); }, 400);
+    }); // ← fecha o forEach corretamente
+}
+    </script>
+</body>
+</html>

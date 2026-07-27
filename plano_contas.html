@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plano de Contas</title>
+    <meta name="robots" content="noindex,nofollow">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --sidebar-w:           260px;
+            --color-bg:            #f4f6f9;
+            --color-surface:       #ffffff;
+            --color-primary:       #e85d04;
+            --color-primary-dark:  #c84e00;
+            --color-primary-light: #fff1ea;
+            --color-text:          #1a1a2e;
+            --color-muted:         #6b7280;
+            --color-border:        #e5e7eb;
+            --radius:              10px;
+            --shadow-sm:           0 1px 3px rgba(0,0,0,.08);
+            --shadow-md:           0 4px 16px rgba(0,0,0,.10);
+            --shadow-lg:           0 8px 32px rgba(0,0,0,.14);
+            --transition:          .22s ease;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: var(--color-bg);
+            color: var(--color-text);
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* ── Sidebar ── */
+        .sidebar {
+            position: fixed; top: 0; left: 0;
+            width: var(--sidebar-w); height: 100vh;
+            background: #1a1a2e;
+            display: flex; flex-direction: column;
+            z-index: 100;
+            box-shadow: 3px 0 24px rgba(0,0,0,.18);
+            transition: transform var(--transition);
+        }
+
+        .sidebar-brand {
+            padding: 28px 20px 20px;
+            border-bottom: 1px solid rgba(255,255,255,.08);
+            display: flex; flex-direction: column; align-items: center; gap: 10px;
+        }
+
+        .sidebar-brand img { width: 140px; filter: brightness(1.1); }
+
+        .sidebar-badge {
+            font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+            color: var(--color-primary);
+            background: rgba(232,93,4,.12); border: 1px solid rgba(232,93,4,.25);
+            border-radius: 20px; padding: 3px 10px;
+        }
+
+        .sidebar-nav {
+            flex: 1; padding: 16px 14px; overflow-y: auto;
+            display: flex; flex-direction: column; gap: 2px;
+        }
+
+        .sidebar-nav::-webkit-scrollbar { width: 4px; }
+        .sidebar-nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); border-radius: 4px; }
+
+        .nav-section-label {
+            font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+            color: rgba(255,255,255,.30); padding: 12px 8px 4px;
+        }
+
+        .nav-btn {
+            display: flex; align-items: center; gap: 12px;
+            width: 100%; padding: 10px 14px; border: none; border-radius: var(--radius);
+            background: transparent; color: rgba(255,255,255,.75);
+            font-family: inherit; font-size: 13.5px; font-weight: 600;
+            cursor: pointer; text-align: left; text-decoration: none;
+            transition: background var(--transition), color var(--transition);
+        }
+
+        .nav-btn:hover { background: rgba(255,255,255,.07); color: #fff; }
+        .nav-btn.active { background: var(--color-primary-light); color: var(--color-primary); }
+        .nav-btn.active .icon { background: rgba(232,93,4,.15); }
+        .nav-btn.danger:hover { background: rgba(239,68,68,.12); color: #f87171; }
+
+        .nav-btn .icon {
+            width: 30px; height: 30px; border-radius: 7px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 15px; background: rgba(255,255,255,.06); flex-shrink: 0;
+        }
+
+        .nav-divider { height: 1px; background: rgba(255,255,255,.07); margin: 6px 0; }
+
+        .sidebar-footer { padding: 16px 20px; border-top: 1px solid rgba(255,255,255,.08); }
+        .sidebar-footer p { font-size: 11px; color: rgba(255,255,255,.25); text-align: center; line-height: 1.5; }
+
+        /* Mobile */
+        .menu-toggle {
+            display: none; position: fixed; top: 14px; left: 14px; z-index: 200;
+            width: 42px; height: 42px; border: none; border-radius: var(--radius);
+            background: #1a1a2e; color: #fff; font-size: 20px; cursor: pointer;
+            box-shadow: var(--shadow-md); align-items: center; justify-content: center;
+        }
+
+        .sidebar-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,.45); z-index: 99; backdrop-filter: blur(2px);
+        }
+
+        /* ── Main ── */
+        .main {
+            margin-left: var(--sidebar-w); flex: 1;
+            display: flex; flex-direction: column; min-height: 100vh;
+        }
+
+        /* Topbar */
+        .topbar {
+            background: var(--color-surface);
+            padding: 18px 28px;
+            border-bottom: 1px solid var(--color-border);
+            display: flex; align-items: center; justify-content: space-between;
+            box-shadow: var(--shadow-sm);
+            position: sticky; top: 0; z-index: 50;
+        }
+
+        .topbar h1 { font-size: 20px; font-weight: 800; color: var(--color-text); }
+        .topbar h1 span { color: var(--color-primary); }
+
+        .topbar-back {
+            display: flex; align-items: center; gap: 6px;
+            font-size: 13px; font-weight: 700; color: var(--color-muted);
+            text-decoration: none; padding: 7px 14px;
+            border: 1.5px solid var(--color-border); border-radius: 8px;
+            transition: all var(--transition);
+        }
+
+        .topbar-back:hover { border-color: var(--color-primary); color: var(--color-primary); background: var(--color-primary-light); }
+
+        /* ── Content ── */
+        .content {
+            flex: 1;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 36px 28px;
+        }
+
+        /* ── Form card ── */
+        .form-card {
+            background: var(--color-surface);
+            border-radius: 16px;
+            box-shadow: var(--shadow-md);
+            width: 100%;
+            max-width: 600px;
+            overflow: hidden;
+        }
+
+        .form-card-header {
+            padding: 28px 32px 22px;
+            border-bottom: 1px solid var(--color-border);
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .form-card-icon {
+            width: 48px; height: 48px;
+            border-radius: 12px;
+            background: var(--color-primary-light);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 22px;
+            flex-shrink: 0;
+        }
+
+        .form-card-header-text h2 {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--color-text);
+        }
+
+        .form-card-header-text p {
+            font-size: 13px;
+            color: var(--color-muted);
+            margin-top: 2px;
+        }
+
+        .form-card-body { padding: 28px 32px 32px; }
+
+        .form-section-label {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .10em;
+            color: var(--color-muted);
+            margin-bottom: 12px;
+            margin-top: 22px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-section-label:first-child { margin-top: 0; }
+
+        .form-section-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--color-border);
+        }
+
+        .form-group { margin-bottom: 14px; }
+        .form-group:last-of-type { margin-bottom: 0; }
+
+        .form-group label {
+            display: block;
+            font-size: 11px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: .06em;
+            color: var(--color-muted); margin-bottom: 5px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%; padding: 10px 13px;
+            border: 1.5px solid var(--color-border); border-radius: 8px;
+            font-family: inherit; font-size: 14px; color: var(--color-text);
+            background: var(--color-bg); outline: none;
+            transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px rgba(232,93,4,.12);
+            background: #fff;
+        }
+
+        .form-group input::placeholder { color: #b0b8c4; }
+
+        .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+        .input-wrap { position: relative; }
+
+        .input-wrap .input-icon {
+            position: absolute;
+            left: 12px; top: 50%; transform: translateY(-50%);
+            font-size: 15px; pointer-events: none;
+        }
+
+        .input-wrap input { padding-left: 36px; }
+
+        .btn-submit {
+            width: 100%; padding: 13px;
+            background: var(--color-primary); color: #fff;
+            border: none; border-radius: 10px;
+            font-family: inherit; font-size: 15px; font-weight: 800;
+            cursor: pointer; margin-top: 24px;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            transition: background var(--transition), transform .12s, box-shadow var(--transition);
+            box-shadow: 0 3px 10px rgba(232,93,4,.35);
+        }
+
+        .btn-submit:hover {
+            background: var(--color-primary-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(232,93,4,.45);
+        }
+
+        .btn-submit:active { transform: translateY(0); }
+
+        .btn-cancel-link {
+            display: block; text-align: center;
+            margin-top: 14px;
+            font-size: 13px; font-weight: 700;
+            color: var(--color-muted); text-decoration: none;
+            transition: color var(--transition);
+        }
+
+        .btn-cancel-link:hover { color: var(--color-primary); }
+
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.active { transform: translateX(0); }
+            .sidebar-overlay.active { display: block; }
+            .menu-toggle { display: flex; }
+            .main { margin-left: 0; }
+            .topbar { padding: 14px 16px; padding-left: 64px; }
+            .content { padding: 20px 16px; align-items: flex-start; }
+            .form-card-header { padding: 22px 20px 18px; }
+            .form-card-body { padding: 20px 20px 24px; }
+            .form-grid-2 { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<button class="menu-toggle" id="menuToggle" aria-label="Abrir menu">☰</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- ── Sidebar ── -->
+<nav class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+        <img src="https://raw.githubusercontent.com/Williamsrvs/img_catalogodigital/refs/heads/main/logo%20pedido%20certo.png" alt="Pedido Certo">
+        <span class="sidebar-badge">Plano de Contas</span>
+    </div>
+
+    <div class="sidebar-nav">
+        <span class="nav-section-label">Cadastros</span>
+
+        <a href="/cliente" class="nav-btn">
+            <span class="icon">📃</span> Cadastro de Cliente
+        </a>
+        <a href="/produto" class="nav-btn">
+            <span class="icon">➕</span> Cadastro de Produto
+        </a>
+        <a href="entregadores" class="nav-btn">
+            <span class="icon">🛵</span> Cadastro de Entregador
+        </a>
+        <a href="/cadastrar_usuario" class="nav-btn">
+            <span class="icon">🔑</span> Cadastrar Usuários
+        </a>
+        <a href="/plano_contas" class="nav-btn active">
+            <span class="icon">📊</span> Plano de Contas
+        </a>
+
+        <a href="/cad_financeiro" class="nav-btn">
+            <span class="icon">💰</span>
+            Registro Financeiro
+        </a>
+
+        <div class="nav-divider"></div>
+        <span class="nav-section-label">Gerenciamento</span>
+
+        <a href="/ger_clientes" class="nav-btn">
+            <span class="icon">🔝</span> Gerenciar Clientes
+        </a>
+        <a href="/ger_pedidos" class="nav-btn">
+            <span class="icon">📦</span> Gerenciar Pedidos
+        </a>
+
+        
+
+        <a href="/pedidos" class="nav-btn">
+            <span class="icon">🛒</span> Fazer Pedidos (PDV)
+        </a>
+
+        <a href="/dashboard" class="nav-btn">
+            <span class="icon">📊</span>
+            Dashboard de Vendas
+        </a>
+
+        <div class="nav-divider"></div>
+        <span class="nav-section-label">Conta</span>
+
+    
+        <a href="/lojista" class="nav-btn danger">
+            <span class="icon">🚪</span> Sair
+        </a>
+    </div>
+
+    <div class="sidebar-footer">
+        <p>&copy; 2025 Date Analytics<br>Todos os direitos reservados</p>
+    </div>
+</nav>
+
+<!-- ── Main ── -->
+<main class="main">
+
+    <div class="topbar">
+        <h1>📊 Plano de <span>Contas</span></h1>
+        <a href="/lojista" class="topbar-back">🏠 Voltar ao Início</a>
+    </div>
+
+    <div class="content">
+        <div class="form-card">
+
+            <div class="form-card-header">
+                <div class="form-card-icon">📊</div>
+                <div class="form-card-header-text">
+                    <h2>Nova Conta</h2>
+                    <p>Preencha os dados para cadastrar uma nova conta no plano de contas</p>
+                </div>
+            </div>
+
+            <div class="form-card-body">
+                <form action="/plano_contas" method="POST" id="planoContasForm">
+
+                    <!-- Identificação -->
+                    <div class="form-section-label">Identificação</div>
+
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label for="dt_registro">Data Registro</label>
+                            <div class="input-wrap">
+                                <span class="input-icon">🗓️</span>
+                                <input type="date" id="dt_registro" name="dt_registro" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="tipo">Tipo</label>
+                            <select id="tipo" name="tipo" required>
+                                <option value="" disabled selected>Selecione</option>
+                                <option value="RECEITA">RECEITA</option>
+                                <option value="DESPESA">DESPESA</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Classificação -->
+                    <div class="form-section-label">Classificação</div>
+
+                    <div class="form-group">
+                        <label for="tipo_conta">Descrição da Conta</label>
+                        <div class="input-wrap">
+                            <span class="input-icon">✉️</span>
+                            <input type="text" id="tipo_conta" name="tipo_conta" placeholder="Ex: Conta de água" required>
+                        </div>
+                    </div>
+
+                    <!-- Submit -->
+                    <button type="submit" class="btn-submit">
+                        ✅ Cadastrar Conta
+                    </button>
+
+                    <a href="/lojista" class="btn-cancel-link">← Cancelar e voltar</a>
+
+                </form>
+            </div>
+
+        </div>
+    </div>
+
+</main>
+
+<script>
+    /* ── Sidebar mobile ── */
+    const sidebar    = document.getElementById('sidebar');
+    const overlay    = document.getElementById('sidebarOverlay');
+    const menuToggle = document.getElementById('menuToggle');
+
+    menuToggle.addEventListener('click', () => sidebar.classList.contains('active') ? closeSidebar() : openSidebar());
+    overlay.addEventListener('click', closeSidebar);
+    function openSidebar()  { sidebar.classList.add('active');    overlay.classList.add('active'); }
+    function closeSidebar() { sidebar.classList.remove('active'); overlay.classList.remove('active'); }
+
+    /* ── Fechar com ESC ── */
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') window.location.href = '/lojista';
+    });
+</script>
+
+</body>
+</html>

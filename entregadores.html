@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro de Entregador — Pedido Certo</title>
+    <meta name="robots" content="noindex,nofollow">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --sidebar-w:           260px;
+            --color-bg:            #f4f6f9;
+            --color-surface:       #ffffff;
+            --color-primary:       #e85d04;
+            --color-primary-dark:  #c84e00;
+            --color-primary-light: #fff1ea;
+            --color-text:          #1a1a2e;
+            --color-muted:         #6b7280;
+            --color-border:        #e5e7eb;
+            --radius:              10px;
+            --shadow-sm:           0 1px 3px rgba(0,0,0,.08);
+            --shadow-md:           0 4px 16px rgba(0,0,0,.10);
+            --transition:          .22s ease;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: var(--color-bg);
+            color: var(--color-text);
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* ── Sidebar ── */
+        .sidebar {
+            position: fixed; top: 0; left: 0;
+            width: var(--sidebar-w); height: 100vh;
+            background: #1a1a2e;
+            display: flex; flex-direction: column;
+            z-index: 100;
+            box-shadow: 3px 0 24px rgba(0,0,0,.18);
+            transition: transform var(--transition);
+        }
+
+        .sidebar-brand {
+            padding: 28px 20px 20px;
+            border-bottom: 1px solid rgba(255,255,255,.08);
+            display: flex; flex-direction: column; align-items: center; gap: 10px;
+        }
+
+        .sidebar-brand img { width: 140px; filter: brightness(1.1); }
+
+        .sidebar-badge {
+            font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+            color: var(--color-primary);
+            background: rgba(232,93,4,.12); border: 1px solid rgba(232,93,4,.25);
+            border-radius: 20px; padding: 3px 10px;
+        }
+
+        .sidebar-nav {
+            flex: 1; padding: 16px 14px; overflow-y: auto;
+            display: flex; flex-direction: column; gap: 2px;
+        }
+
+        .sidebar-nav::-webkit-scrollbar { width: 4px; }
+        .sidebar-nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); border-radius: 4px; }
+
+        .nav-section-label {
+            font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+            color: rgba(255,255,255,.30); padding: 12px 8px 4px;
+        }
+
+        .nav-btn {
+            display: flex; align-items: center; gap: 12px;
+            width: 100%; padding: 10px 14px; border: none; border-radius: var(--radius);
+            background: transparent; color: rgba(255,255,255,.75);
+            font-family: inherit; font-size: 13.5px; font-weight: 600;
+            cursor: pointer; text-align: left; text-decoration: none;
+            transition: background var(--transition), color var(--transition);
+        }
+
+        .nav-btn:hover { background: rgba(255,255,255,.07); color: #fff; }
+        .nav-btn.active { background: var(--color-primary-light); color: var(--color-primary); }
+        .nav-btn.active .icon { background: rgba(232,93,4,.15); }
+        .nav-btn.danger:hover { background: rgba(239,68,68,.12); color: #f87171; }
+
+        .nav-btn .icon {
+            width: 30px; height: 30px; border-radius: 7px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 15px; background: rgba(255,255,255,.06); flex-shrink: 0;
+        }
+
+        .nav-divider { height: 1px; background: rgba(255,255,255,.07); margin: 6px 0; }
+
+        .sidebar-footer { padding: 16px 20px; border-top: 1px solid rgba(255,255,255,.08); }
+        .sidebar-footer p { font-size: 11px; color: rgba(255,255,255,.25); text-align: center; line-height: 1.5; }
+
+        /* Mobile */
+        .menu-toggle {
+            display: none; position: fixed; top: 14px; left: 14px; z-index: 200;
+            width: 42px; height: 42px; border: none; border-radius: var(--radius);
+            background: #1a1a2e; color: #fff; font-size: 20px; cursor: pointer;
+            box-shadow: var(--shadow-md); align-items: center; justify-content: center;
+        }
+
+        .sidebar-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,.45); z-index: 99; backdrop-filter: blur(2px);
+        }
+
+        /* ── Main ── */
+        .main {
+            margin-left: var(--sidebar-w); flex: 1;
+            display: flex; flex-direction: column; min-height: 100vh;
+        }
+
+        .topbar {
+            background: var(--color-surface);
+            padding: 18px 28px;
+            border-bottom: 1px solid var(--color-border);
+            display: flex; align-items: center; justify-content: space-between;
+            box-shadow: var(--shadow-sm);
+            position: sticky; top: 0; z-index: 50;
+        }
+
+        .topbar h1 { font-size: 20px; font-weight: 800; color: var(--color-text); }
+        .topbar h1 span { color: var(--color-primary); }
+
+        .topbar-back {
+            display: flex; align-items: center; gap: 6px;
+            font-size: 13px; font-weight: 700; color: var(--color-muted);
+            text-decoration: none; padding: 7px 14px;
+            border: 1.5px solid var(--color-border); border-radius: 8px;
+            transition: all var(--transition);
+        }
+
+        .topbar-back:hover { border-color: var(--color-primary); color: var(--color-primary); background: var(--color-primary-light); }
+
+        /* ── Content ── */
+        .content {
+            flex: 1; padding: 32px 28px;
+            display: flex; justify-content: center; align-items: flex-start;
+        }
+
+        /* ── Form card ── */
+        .form-card {
+            background: var(--color-surface);
+            border-radius: 16px;
+            box-shadow: var(--shadow-md);
+            width: 100%; max-width: 780px;
+            overflow: hidden;
+        }
+
+        .form-card-header {
+            padding: 26px 32px 22px;
+            border-bottom: 1px solid var(--color-border);
+            display: flex; align-items: center; gap: 14px;
+        }
+
+        .form-card-icon {
+            width: 50px; height: 50px; border-radius: 13px;
+            background: var(--color-primary-light);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 24px; flex-shrink: 0;
+        }
+
+        .form-card-header-text h2 { font-size: 18px; font-weight: 800; color: var(--color-text); }
+        .form-card-header-text p  { font-size: 13px; color: var(--color-muted); margin-top: 2px; }
+
+        .form-card-body { padding: 28px 32px 32px; }
+
+        /* Section labels */
+        .form-section-label {
+            font-size: 10px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: .10em; color: var(--color-muted);
+            margin-bottom: 14px; margin-top: 26px;
+            display: flex; align-items: center; gap: 8px;
+        }
+
+        .form-section-label:first-child { margin-top: 0; }
+
+        .form-section-label::after {
+            content: ''; flex: 1; height: 1px; background: var(--color-border);
+        }
+
+        /* Form groups */
+        .form-group { margin-bottom: 14px; }
+        .form-group:last-of-type { margin-bottom: 0; }
+
+        .form-group label {
+            display: block; font-size: 11px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: .06em;
+            color: var(--color-muted); margin-bottom: 5px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%; padding: 10px 13px;
+            border: 1.5px solid var(--color-border); border-radius: 8px;
+            font-family: inherit; font-size: 14px; color: var(--color-text);
+            background: var(--color-bg); outline: none;
+            transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
+            appearance: none;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px rgba(232,93,4,.12);
+            background: #fff;
+        }
+
+        .form-group input::placeholder { color: #b0b8c4; }
+
+        /* Input with icon */
+        .input-wrap { position: relative; }
+        .input-wrap .input-icon {
+            position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+            font-size: 14px; pointer-events: none; line-height: 1;
+        }
+        .input-wrap input { padding-left: 36px; }
+
+        /* Custom select */
+        .select-wrap { position: relative; }
+        .select-wrap::after {
+            content: '▾'; position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+            font-size: 13px; color: var(--color-muted); pointer-events: none;
+        }
+        .select-wrap select { padding-right: 32px; cursor: pointer; }
+
+        /* Grids */
+        .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .form-grid-3 { display: grid; grid-template-columns: 2fr 1fr 80px; gap: 14px; }
+        .form-grid-cnh { display: grid; grid-template-columns: 1fr 150px 130px; gap: 14px; }
+
+        /* Tipo chips */
+        .tipo-chips { display: flex; gap: 10px; }
+
+        .tipo-chip {
+            flex: 1; padding: 9px 12px;
+            border: 1.5px solid var(--color-border); border-radius: 8px;
+            font-size: 13px; font-weight: 700; color: var(--color-muted);
+            cursor: pointer; text-align: center;
+            transition: all var(--transition); background: var(--color-bg);
+            user-select: none;
+        }
+
+        .tipo-chip:hover  { border-color: var(--color-primary); color: var(--color-primary); background: var(--color-primary-light); }
+        .tipo-chip.active { border-color: var(--color-primary); color: var(--color-primary); background: var(--color-primary-light); }
+
+        /* Submit / cancel */
+        .btn-submit {
+            width: 100%; padding: 13px;
+            background: var(--color-primary); color: #fff;
+            border: none; border-radius: 10px;
+            font-family: inherit; font-size: 15px; font-weight: 800;
+            cursor: pointer; margin-top: 26px;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            transition: background var(--transition), transform .12s, box-shadow var(--transition);
+            box-shadow: 0 3px 10px rgba(232,93,4,.35);
+        }
+
+        .btn-submit:hover { background: var(--color-primary-dark); transform: translateY(-1px); box-shadow: 0 6px 18px rgba(232,93,4,.45); }
+        .btn-submit:active { transform: translateY(0); }
+
+        .btn-cancel-link {
+            display: block; text-align: center; margin-top: 14px;
+            font-size: 13px; font-weight: 700; color: var(--color-muted);
+            text-decoration: none; transition: color var(--transition);
+        }
+
+        .btn-cancel-link:hover { color: var(--color-primary); }
+
+        /* ── Responsive ── */
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.active { transform: translateX(0); }
+            .sidebar-overlay.active { display: block; }
+            .menu-toggle { display: flex; }
+            .main { margin-left: 0; }
+            .topbar { padding: 14px 16px; padding-left: 64px; }
+            .content { padding: 20px 16px; }
+            .form-card-header { padding: 22px 20px 18px; }
+            .form-card-body  { padding: 20px 20px 24px; }
+            .form-grid-2   { grid-template-columns: 1fr; }
+            .form-grid-3   { grid-template-columns: 1fr 1fr; }
+            .form-grid-cnh { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<button class="menu-toggle" id="menuToggle" aria-label="Abrir menu">☰</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- ── Sidebar ── -->
+<nav class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+        <img src="https://raw.githubusercontent.com/Williamsrvs/img_catalogodigital/refs/heads/main/logo%20pedido%20certo.png" alt="Pedido Certo">
+        <span class="sidebar-badge">Cadastro de Entregador</span>
+    </div>
+
+    <div class="sidebar-nav">
+        <span class="nav-section-label">Cadastros</span>
+
+        <a href="/produto" class="nav-btn">
+            <span class="icon">➕</span> Cadastro de Produto
+        </a>
+        <a href="/cliente" class="nav-btn">
+            <span class="icon">📃</span> Cadastro de Cliente
+        </a>
+        <a href="/entregadores" class="nav-btn active">
+            <span class="icon">🛵</span> Cadastro de Entregador
+        </a>
+        <a href="/cadastrar_usuario" class="nav-btn">
+            <span class="icon">🔑</span> Cadastrar Usuários
+        </a>
+
+        <a href="/plano_contas" class="nav-btn">
+            <span class="icon">📑</span>
+            Plano Contas
+        </a>
+
+        <a href="{{ url_for('cad_financeiro') }}" class="nav-btn">
+            <span class="icon">💰</span>
+            Registro Financeiro
+        </a>
+
+        <div class="nav-divider"></div>
+        <span class="nav-section-label">Gerenciamento</span>
+
+        <a href="/ger_clientes" class="nav-btn">
+            <span class="icon">👤</span> Gerenciar Clientes
+        </a>
+        <a href="/ger_pedidos" class="nav-btn">
+            <span class="icon">📦</span> Gerenciar Pedidos
+        </a>
+        <a href="/pedidos" class="nav-btn">
+            <span class="icon">🛒</span> Fazer Pedidos (PDV)
+        </a>
+
+        <a href="/dashboard" class="nav-btn">
+            <span class="icon">📊</span>
+            Dashboard de Vendas
+        </a>
+
+        <div class="nav-divider"></div>
+        <span class="nav-section-label">Conta</span>
+
+    
+        <a href="/lojista" class="nav-btn danger">
+            <span class="icon">🚪</span> Sair
+        </a>
+    </div>
+
+    <div class="sidebar-footer">
+        <p>&copy; 2025 Date Analytics<br>Todos os direitos reservados</p>
+    </div>
+</nav>
+
+<!-- ── Main ── -->
+<main class="main">
+
+    <div class="topbar">
+        <h1>🛵 Cadastro de <span>Entregador</span></h1>
+        <a href="/lojista" class="topbar-back">🏠 Voltar ao Início</a>
+    </div>
+
+    <div class="content">
+        <div class="form-card">
+
+            <div class="form-card-header">
+                <div class="form-card-icon">🛵</div>
+                <div class="form-card-header-text">
+                    <h2>Novo Entregador</h2>
+                    <p>Preencha os dados para cadastrar um novo entregador no sistema</p>
+                </div>
+            </div>
+
+            <div class="form-card-body">
+                <form action="/entregadores" method="POST" id="entregadorForm">
+
+                    <!-- IDENTIFICAÇÃO -->
+                    <div class="form-section-label">Identificação</div>
+
+                    <div class="form-group">
+                        <label for="nome_entregador">Nome Completo</label>
+                        <div class="input-wrap">
+                            <span class="input-icon">👤</span>
+                            <input type="text" id="nome_entregador" name="nome_entregador"
+                                   placeholder="Digite o nome completo" required>
+                        </div>
+                    </div>
+
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label for="telefone">Telefone / WhatsApp</label>
+                            <div class="input-wrap">
+                                <span class="input-icon">📱</span>
+                                <input type="tel" id="telefone" name="telefone"
+                                       placeholder="(00) 00000-0000" maxlength="15" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Tipo de Entregador</label>
+                            <div class="tipo-chips" id="tipoChips">
+                                <div class="tipo-chip" data-value="Próprio"       onclick="selectTipo(this)">🏢 Próprio</div>
+                                <div class="tipo-chip" data-value="Terceirizado"  onclick="selectTipo(this)">🤝 Terceirizado</div>
+                            </div>
+                            <input type="hidden" id="tipo_entregador" name="tipo_entregador">
+                        </div>
+                    </div>
+
+                    <!-- HABILITAÇÃO -->
+                    <div class="form-section-label">Habilitação (CNH)</div>
+
+                    <div class="form-grid-cnh">
+                        <div class="form-group">
+                            <label for="habilitacao">Número da Habilitação</label>
+                            <div class="input-wrap">
+                                <span class="input-icon">📋</span>
+                                <input type="text" id="habilitacao" name="habilitacao"
+                                    placeholder="00000000000" maxlength="11" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="validade_cnh">Validade da CNH</label>
+                            <input type="date" id="validade_cnh" name="validade_cnh" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="tipo_cnh">Categoria</label>
+                            <div class="select-wrap">
+                                <select id="tipo_cnh" name="tipo_cnh" required>
+                                    <option value="" disabled selected>Tipo</option>
+                                    <option value="A">A</option>
+                                    <option value="B">B</option>
+                                    <option value="C">C</option>
+                                    <option value="D">D</option>
+                                    <option value="E">E</option>
+                                    <option value="AB">AB</option>
+                                    <option value="ACC">ACC</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ENDEREÇO -->
+                    <div class="form-section-label">Endereço</div>
+
+                    <div class="form-group">
+                        <label for="endereco">Logradouro</label>
+                        <div class="input-wrap">
+                            <span class="input-icon">🏠</span>
+                            <input type="text" id="endereco" name="endereco"
+                                placeholder="Rua, Avenida... e número" required>
+                        </div>
+                    </div>
+
+                    <div class="form-grid-3">
+                        <div class="form-group">
+                            <label for="bairro">Bairro</label>
+                            <input type="text" id="bairro" name="bairro"
+                                placeholder="Nome do bairro" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="cidade">Cidade</label>
+                            <input type="text" id="cidade" name="cidade"
+                                placeholder="Cidade" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="uf">UF</label>
+                            <input type="text" id="uf" name="uf"
+                                placeholder="UF" maxlength="2" style="text-transform:uppercase;" required>
+                        </div>
+                    </div>
+
+                    <!-- VEÍCULO -->
+                    <div class="form-section-label">Veículo</div>
+
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label for="veiculo">Marca e Modelo</label>
+                            <div class="input-wrap">
+                                <span class="input-icon">🏍️</span>
+                                <input type="text" id="veiculo" name="veiculo"
+                                       placeholder="Ex: Honda CG 160" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="ano_veiculo">Ano de Fabricação</label>
+                            <input type="number" id="ano_veiculo" name="ano_veiculo"
+                                   placeholder="Ex: 2022" min="1990" max="2030" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="cor">Cor do Veículo</label>
+                            <input type="text" id="cor" name="cor"
+                                   placeholder="Ex: Vermelho" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="placa">Placa do Veículo</label>
+                            <div class="input-wrap">
+                                <span class="input-icon">🔖</span>
+                                <input type="text" id="placa" name="placa"
+                                       placeholder="ABC-0000" maxlength="8" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-submit">
+                        ✅ Cadastrar Entregador
+                    </button>
+
+                    <a href="/lojista" class="btn-cancel-link">← Cancelar e voltar</a>
+
+                </form>
+            </div>
+
+        </div>
+    </div>
+
+</main>
+
+<script>
+    /* ── Sidebar mobile ── */
+    const sidebar    = document.getElementById('sidebar');
+    const overlay    = document.getElementById('sidebarOverlay');
+    const menuToggle = document.getElementById('menuToggle');
+
+    menuToggle.addEventListener('click', () =>
+        sidebar.classList.contains('active') ? closeSidebar() : openSidebar());
+    overlay.addEventListener('click', closeSidebar);
+    function openSidebar()  { sidebar.classList.add('active');    overlay.classList.add('active'); }
+    function closeSidebar() { sidebar.classList.remove('active'); overlay.classList.remove('active'); }
+
+    /* ── Tipo chips ── */
+    function selectTipo(el) {
+        document.querySelectorAll('.tipo-chip').forEach(c => c.classList.remove('active'));
+        el.classList.add('active');
+        document.getElementById('tipo_entregador').value = el.dataset.value;
+    }
+
+    /* ── Validação tipo ao submit ── */
+    document.getElementById('entregadorForm').addEventListener('submit', function(e) {
+        if (!document.getElementById('tipo_entregador').value) {
+            e.preventDefault();
+            alert('⚠️ Selecione o tipo de entregador (Próprio ou Terceirizado).');
+            document.getElementById('tipoChips').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    });
+
+    /* ── Máscara telefone ── */
+    document.getElementById('telefone').addEventListener('input', function(e) {
+        let v = e.target.value.replace(/\D/g, '');
+        if (v.length <= 10) v = v.replace(/^(\d{2})(\d{4})(\d{0,4}).*/, '($1) $2-$3');
+        else                v = v.replace(/^(\d{2})(\d{5})(\d{0,4}).*/, '($1) $2-$3');
+        e.target.value = v;
+    });
+
+    /* ── Máscara placa (ABC-0D00 / ABC-0000) ── */
+    document.getElementById('placa').addEventListener('input', function(e) {
+        let v = e.target.value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+        if (v.length > 3) v = v.slice(0, 3) + '-' + v.slice(3, 7);
+        e.target.value = v;
+    });
+
+    /* ── UF uppercase ── */
+    document.getElementById('uf').addEventListener('input', function(e) {
+        e.target.value = e.target.value.toUpperCase().replace(/[^A-Z]/g, '');
+    });
+
+    /* ── Habilitação — somente números ── */
+    document.getElementById('habilitacao').addEventListener('input', function(e) {
+        e.target.value = e.target.value.replace(/\D/g, '');
+    });
+
+    /* ── ESC volta ── */
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') window.location.href = '/lojista';
+    });
+</script>
+
+</body>
+</html>

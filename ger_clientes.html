@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>👤 Gerenciamento de Clientes</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, rgba(67, 97, 238, 0.15) 0%, rgba(76, 201, 240, 0.15) 100%),
+                        url('https://raw.githubusercontent.com/Williamsrvs/imagens_sistemas/refs/heads/main/cliente.png') no-repeat center center fixed;
+            background-size: cover;
+            background-blend-mode: overlay;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            animation: fadeInDown 0.6s ease;
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #546e7a;
+            font-size: 1.1rem;
+        }
+
+        .container_data {
+            max-width: 1800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+            padding: 30px;
+            animation: fadeInUp 0.6s ease;
+        }
+
+        .filter-section {
+            background: linear-gradient(135deg, #e85d04 0%, #c84e00 100%);
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .filter-section h3 {
+            color: white;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .filter-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            align-items: end;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            color: white;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .form-group input {
+            padding: 12px 15px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 8px;
+            font-size: 1rem;
+            background: rgba(255,255,255,0.95);
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: white;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(255,255,255,0.2);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: white;
+            color: #667eea;
+            flex: 1;
+        }
+
+        .btn-primary:hover {
+            background: #f8f9fa;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid white;
+            flex: 1;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 15px 0;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .stats-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 15px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            color: #546e7a;
+        }
+
+        .stat-item i {
+            color: #667eea;
+        }
+
+        .stat-number {
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        thead {
+            background: linear-gradient(135deg, #e85d04 0%, #c84e00 100%);
+        }
+
+        thead th {
+            padding: 18px 15px;
+            text-align: left;
+            font-weight: 600;
+            color: white;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid #e0e0e0;
+            transition: all 0.3s ease;
+        }
+
+        tbody tr:hover {
+            background: #f8f9ff;
+            transform: scale(1.01);
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
+        }
+
+        tbody td {
+            padding: 16px 15px;
+            color: #37474f;
+            font-size: 0.95rem;
+        }
+
+        tbody tr:last-child {
+            border-bottom: none;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 60px 20px;
+            color: #90a4ae;
+        }
+
+        .no-data i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+
+        .no-data h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        .no-data p {
+            font-size: 1rem;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .filter-controls {
+                grid-template-columns: 1fr;
+            }
+
+            .btn-group {
+                flex-direction: column;
+            }
+
+            .stats-bar {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+
+            .stats-info {
+                flex-wrap: wrap;
+            }
+
+            .container_data {
+                padding: 20px;
+            }
+
+            table {
+                font-size: 0.85rem;
+            }
+
+            thead th, tbody td {
+                padding: 12px 10px;
+            }
+        }
+    </style>
+
+    <div class="header">
+        <h1>👤 Gerenciamento de Clientes</h1>
+        <p>Consulte e filtre seus clientes cadastrados</p>
+    </div>
+
+    <div class="container_data">
+        <div class="filter-section">
+            <h3>
+                <i class="fas fa-filter"></i>
+                Filtros de Pesquisa
+            </h3>
+            <form method="GET" action="/ger_clientes">
+                <div class="filter-controls">
+                    <div class="form-group">
+                        <label for="data_inicio">
+                            <i class="fas fa-calendar-alt"></i>
+                            Data Inicial
+                        </label>
+                        <input type="date" id="data_inicio" name="data_inicio" value="{{ request.args.get('data_inicio', '') }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="data_fim">
+                            <i class="fas fa-calendar-check"></i>
+                            Data Final
+                        </label>
+                        <input type="date" id="data_fim" name="data_fim" value="{{ request.args.get('data_fim', '') }}">
+                    </div>
+                    <div class="btn-group">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i>
+                            Filtrar
+
+                    <button type="button" class="btn btn-secondary" onclick="window.location.href='/cliente_excel'">
+                        <i class="fas fa-file-excel"></i>
+                        Baixar Excel
+                    </button>
+                        </button>
+                        </button>
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="limparFiltros()">
+                            <i class="fas fa-times"></i>
+                            Limpar
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="stats-bar">
+            <div class="stats-info">
+                <div class="stat-item">
+                    <i class="fas fa-users"></i>
+                    <span>Total: <span class="stat-number">{{ clientes|length }}</span></span>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-clock"></i>
+                    <span id="ultima-atualizacao"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-wrapper">
+            <button class="btn btn-primary" onclick="window.location.href='/lojista'">
+                <i class="fas fa-arrow-left"></i>
+                Retornar    
+            </button>
+                        </button>
+            <table>
+                <thead>
+                    <tr>
+                        <th><i class="fas fa-user"></i> Nome</th>
+                        <th><i class="fas fa-envelope"></i> Email</th>
+                        <th><i class="fas fa-phone"></i> Telefone</th>
+                        <th><i class="fas fa-map-marker-alt"></i> Endereço</th>
+                        <th><i class="fas fa-map-marker-alt"></i> Cidade</th>
+                        <th><i class="fas fa-map-marker-alt"></i> Bairro</th>
+                        <th><i class="fas fa-map-marker-alt"></i> UF</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if clientes %}
+                        {% for cliente in clientes %}
+                        <tr>
+                            <td>{{ cliente.nome_cliente }}</td>
+                            <td>{{ cliente.email }}</td>
+                            <td>{{ cliente.telefone }}</td>
+                            <td>{{ cliente.endereco }}</td>
+                            <td>{{ cliente.cidade}}</td>
+                            <td>{{ cliente.bairro }}</td>
+                            <td>{{ cliente.uf }}</td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="4" class="no-data">
+                                <i class="fas fa-inbox"></i>
+                                <h3>Nenhum cliente encontrado</h3>
+                                <p>Não há clientes cadastrados no sistema ou que correspondam aos filtros aplicados.</p>
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        function limparFiltros() {
+            window.location.href = '/ger_clientes';
+        }
+
+        function atualizarHora() {
+            const agora = new Date();
+            const hora = agora.toLocaleTimeString('pt-BR');
+            document.getElementById('ultima-atualizacao').textContent = `Atualizado às ${hora}`;
+        }
+
+        atualizarHora();
+        setInterval(atualizarHora, 60000);
+    </script>
+</body>
+</html>

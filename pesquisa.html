@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pesquisa de Satisfação — Pedido Certo</title>
+    <meta name="robots" content="noindex,nofollow">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --primary:       #e85d04;
+            --primary-dark:  #c84e00;
+            --primary-light: #fff1ea;
+            --dark:          #1a1a2e;
+            --surface:       #ffffff;
+            --text:          #1a1a2e;
+            --muted:         #6b7280;
+            --border:        #e5e7eb;
+            --bg:            #f4f6f9;
+        }
+
+        html, body { font-family: 'Nunito', sans-serif; }
+
+        body {
+            display: flex; flex-direction: column;
+            min-height: 100vh;
+            background: var(--dark);
+        }
+
+        /* ── Fundo animado ── */
+        .bg {
+            position: fixed; inset: 0; z-index: 0;
+            background: var(--dark); overflow: hidden;
+        }
+
+        .bg::before {
+            content: ''; position: absolute; inset: 0;
+            background-image: radial-gradient(circle, rgba(255,255,255,.065) 1px, transparent 1px);
+            background-size: 36px 36px;
+        }
+
+        .blob {
+            position: absolute; border-radius: 50%;
+            filter: blur(90px); opacity: .36;
+            animation: drift 14s ease-in-out infinite alternate;
+        }
+
+        .blob-1 { width: 520px; height: 520px; background: radial-gradient(circle, #e85d04 0%, transparent 70%); top: -140px; left: -120px; animation-delay: 0s; }
+        .blob-2 { width: 380px; height: 380px; background: radial-gradient(circle, #ff8c42 0%, transparent 70%); bottom: -80px; right: -80px; animation-delay: -7s; }
+        .blob-3 { width: 260px; height: 260px; background: radial-gradient(circle, #c84e00 0%, transparent 70%); top: 50%; left: 58%; animation-delay: -4s; }
+
+        @keyframes drift {
+            from { transform: translate(0,0) scale(1); }
+            to   { transform: translate(28px,18px) scale(1.08); }
+        }
+
+        /* ── Layout ── */
+        main {
+            flex: 1; position: relative; z-index: 1;
+            padding: 32px 20px 40px;
+            display: flex; flex-direction: column; align-items: center;
+        }
+
+        /* ── Header de página ── */
+        .page-header {
+            text-align: center;
+            margin-bottom: 28px;
+            animation: fadeDown .5s ease both;
+        }
+
+        @keyframes fadeDown {
+            from { opacity: 0; transform: translateY(-14px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .page-header .logo {
+            width: 130px;
+            filter: brightness(0) invert(1); opacity: .9;
+            margin-bottom: 14px;
+        }
+
+        .page-header h1 {
+            font-size: 26px; font-weight: 900; color: #fff;
+            line-height: 1.2; margin-bottom: 6px;
+        }
+
+        .page-header h1 span { color: var(--primary); }
+
+        .page-header p {
+            font-size: 14px; color: rgba(255,255,255,.6); font-weight: 500;
+        }
+
+        /* ── Progresso ── */
+        .progress-wrap {
+            width: 100%; max-width: 780px;
+            margin-bottom: 20px;
+            animation: fadeDown .5s .1s ease both;
+        }
+
+        .progress-meta {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 7px;
+        }
+
+        .progress-label { font-size: 12px; font-weight: 700; color: rgba(255,255,255,.55); }
+        .progress-pct   { font-size: 12px; font-weight: 800; color: var(--primary); }
+
+        .progress-track {
+            height: 5px; background: rgba(255,255,255,.1);
+            border-radius: 10px; overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%; background: var(--primary);
+            border-radius: 10px;
+            width: 0%; transition: width .4s ease;
+        }
+
+        /* ── Card formulário ── */
+        .form-card {
+            background: var(--surface);
+            border-radius: 20px; overflow: hidden;
+            width: 100%; max-width: 780px;
+            box-shadow: 0 24px 60px rgba(0,0,0,.45),
+                        0 0 0 1px rgba(255,255,255,.05);
+            animation: cardIn .55s .15s cubic-bezier(.22,.68,0,1.2) both;
+        }
+
+        @keyframes cardIn {
+            from { opacity: 0; transform: translateY(22px) scale(.97); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* Faixa topo laranja */
+        .card-accent {
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary), #ff8c42, var(--primary));
+            background-size: 200% 100%;
+            animation: shimmer 3s linear infinite;
+        }
+
+        @keyframes shimmer {
+            from { background-position: 0% 0%; }
+            to   { background-position: 200% 0%; }
+        }
+
+        .card-body { padding: 36px 40px 40px; }
+
+        /* Mensagens Flask */
+        .alert {
+            border-radius: 9px; padding: 11px 14px;
+            font-size: 13px; font-weight: 700; margin-bottom: 22px;
+            display: flex; align-items: center; gap: 8px;
+        }
+
+        .alert.success { background: #f0fdf4; border: 1.5px solid #86efac; color: #16a34a; }
+        .alert.error   { background: #fef2f2; border: 1.5px solid #fca5a5; color: #dc2626; }
+
+        /* ── Seções ── */
+        .section-title {
+            font-size: 11px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: .10em; color: var(--muted);
+            display: flex; align-items: center; gap: 8px;
+            margin-bottom: 18px; margin-top: 28px;
+        }
+
+        .section-title:first-child { margin-top: 0; }
+
+        .section-title::after {
+            content: ''; flex: 1; height: 1px; background: var(--border);
+        }
+
+        /* ── Questão ── */
+        .question {
+            margin-bottom: 22px;
+        }
+
+        .question-label {
+            display: flex; align-items: flex-start; gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .question-num {
+            flex-shrink: 0;
+            width: 24px; height: 24px; border-radius: 7px;
+            background: var(--primary-light);
+            color: var(--primary);
+            font-size: 11px; font-weight: 900;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        .question-text {
+            font-size: 13.5px; font-weight: 700; color: var(--text);
+            padding-top: 3px; line-height: 1.4;
+        }
+
+        /* ── Estrelas ── */
+        .stars-row {
+            display: flex; gap: 6px; flex-wrap: wrap;
+        }
+
+        .star-option { display: none; }
+
+        .star-label {
+            display: flex; flex-direction: column; align-items: center;
+            gap: 4px; cursor: pointer;
+            padding: 8px 10px; border-radius: 10px;
+            border: 1.5px solid var(--border);
+            background: var(--bg);
+            transition: all .2s ease;
+            min-width: 68px; text-align: center;
+            user-select: none;
+        }
+
+        .star-label:hover {
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        .star-label .emoji { font-size: 22px; }
+
+        .star-label .star-desc {
+            font-size: 10px; font-weight: 700;
+            color: var(--muted); line-height: 1.2;
+        }
+
+        /* Quando o radio correspondente está checked */
+        .star-option:checked + .star-label {
+            border-color: var(--primary);
+            background: var(--primary-light);
+            box-shadow: 0 0 0 2px rgba(232,93,4,.18);
+        }
+
+        .star-option:checked + .star-label .star-desc {
+            color: var(--primary);
+        }
+
+        /* ── Comentários ── */
+        .textarea-wrap { position: relative; }
+        .textarea-wrap .icon {
+            position: absolute; left: 13px; top: 14px; font-size: 15px; pointer-events: none;
+        }
+
+        .textarea-wrap textarea {
+            width: 100%; padding: 11px 13px 11px 38px;
+            border: 1.5px solid var(--border); border-radius: 10px;
+            font-family: inherit; font-size: 14px; font-weight: 600;
+            color: var(--text); background: var(--bg); outline: none;
+            resize: vertical; min-height: 100px;
+            transition: border-color .22s, box-shadow .22s, background .22s;
+        }
+
+        .textarea-wrap textarea::placeholder { color: #b5bec9; font-weight: 500; }
+
+        .textarea-wrap textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(232,93,4,.12);
+            background: #fff;
+        }
+
+        .char-count { font-size: 11px; color: var(--muted); font-weight: 600; text-align: right; margin-top: 4px; }
+        .char-count.near  { color: #f97316; }
+        .char-count.limit { color: #ef4444; }
+
+        /* ── Botões ── */
+        .btn-submit {
+            width: 100%; padding: 14px;
+            background: var(--primary); color: #fff;
+            border: none; border-radius: 11px;
+            font-family: inherit; font-size: 15px; font-weight: 800;
+            cursor: pointer; margin-top: 28px;
+            display: flex; align-items: center; justify-content: center; gap: 9px;
+            transition: background .22s, transform .12s, box-shadow .22s;
+            box-shadow: 0 4px 14px rgba(232,93,4,.38);
+            position: relative; overflow: hidden;
+        }
+
+        .btn-submit::after {
+            content: ''; position: absolute; inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,.12) 0%, transparent 60%);
+            pointer-events: none;
+        }
+
+        .btn-submit:hover { background: var(--primary-dark); transform: translateY(-1px); box-shadow: 0 8px 22px rgba(232,93,4,.48); }
+        .btn-submit:active { transform: translateY(0); }
+
+        .divider { display: flex; align-items: center; gap: 12px; margin: 14px 0; }
+        .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+        .divider span { font-size: 11px; color: var(--muted); font-weight: 700; }
+
+        .btn-back {
+            width: 100%; padding: 12px;
+            background: transparent; color: var(--muted);
+            border: 1.5px solid var(--border); border-radius: 10px;
+            font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            transition: border-color .22s, color .22s, background .22s;
+        }
+
+        .btn-back:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+
+        /* ── Footer ── */
+        footer {
+            position: relative; z-index: 1; text-align: center;
+            padding: 16px; font-size: 12px; font-weight: 600;
+            color: rgba(255,255,255,.25);
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 640px) {
+            .card-body { padding: 24px 20px 28px; }
+            .page-header h1 { font-size: 20px; }
+            .stars-row { gap: 5px; }
+            .star-label { min-width: 52px; padding: 7px 6px; }
+            .star-label .emoji { font-size: 18px; }
+            .star-label .star-desc { font-size: 9px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="bg">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+</div>
+
+<main>
+
+    <!-- Cabeçalho -->
+    <div class="page-header">
+        <img
+            src="https://raw.githubusercontent.com/Williamsrvs/img_catalogodigital/refs/heads/main/logo%20pedido%20certo.png"
+            alt="Pedido Certo"
+            class="logo">
+        <h1>Pesquisa de <span>Satisfação</span></h1>
+        <p>Sua opinião é essencial para melhorarmos o nosso serviço</p>
+    </div>
+
+    <!-- Barra de progresso -->
+    <div class="progress-wrap">
+        <div class="progress-meta">
+            <span class="progress-label">Progresso do preenchimento</span>
+            <span class="progress-pct" id="progressPct">0%</span>
+        </div>
+        <div class="progress-track">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+    </div>
+
+    <!-- Card formulário -->
+    <div class="form-card">
+        <div class="card-accent"></div>
+        <div class="card-body">
+
+            <!-- Alertas Flask -->
+            {% if mensagem %}
+            <div class="alert success">✅ {{ mensagem }}</div>
+            {% endif %}
+
+            {% if erro %}
+            <div class="alert error">❌ {{ erro }}</div>
+            {% endif %}
+
+            <form method="POST" action="/pesquisa" id="surveyForm">
+
+                <!-- ── BLOCO 1: Atendimento & Qualidade ── -->
+                <div class="section-title">Atendimento &amp; Qualidade</div>
+
+                <!-- 1. Atendimento -->
+                <div class="question" data-q="atendimento">
+                    <div class="question-label">
+                        <div class="question-num">1</div>
+                        <div class="question-text">Atendimento recebido</div>
+                    </div>
+                    <div class="stars-row">
+                        <input type="radio" class="star-option" id="at1" name="atendimento" value="1- Péssimo">
+                        <label class="star-label" for="at1"><span class="emoji">😡</span><span class="star-desc">Péssimo</span></label>
+
+                        <input type="radio" class="star-option" id="at2" name="atendimento" value="2- Ruim">
+                        <label class="star-label" for="at2"><span class="emoji">😕</span><span class="star-desc">Ruim</span></label>
+
+                        <input type="radio" class="star-option" id="at3" name="atendimento" value="3- Regular">
+                        <label class="star-label" for="at3"><span class="emoji">😐</span><span class="star-desc">Regular</span></label>
+
+                        <input type="radio" class="star-option" id="at4" name="atendimento" value="4- Bom">
+                        <label class="star-label" for="at4"><span class="emoji">😊</span><span class="star-desc">Bom</span></label>
+
+                        <input type="radio" class="star-option" id="at5" name="atendimento" value="5- Excelente">
+                        <label class="star-label" for="at5"><span class="emoji">🤩</span><span class="star-desc">Excelente</span></label>
+                    </div>
+                </div>
+
+                <!-- 2. Qualidade -->
+                <div class="question" data-q="qualidade">
+                    <div class="question-label">
+                        <div class="question-num">2</div>
+                        <div class="question-text">Qualidade do produto ou serviço</div>
+                    </div>
+                    <div class="stars-row">
+                        <input type="radio" class="star-option" id="qu1" name="qualidade" value="1- Muito abaixo">
+                        <label class="star-label" for="qu1"><span class="emoji">😡</span><span class="star-desc">Muito abaixo</span></label>
+
+                        <input type="radio" class="star-option" id="qu2" name="qualidade" value="2- Abaixo">
+                        <label class="star-label" for="qu2"><span class="emoji">😕</span><span class="star-desc">Abaixo</span></label>
+
+                        <input type="radio" class="star-option" id="qu3" name="qualidade" value="3- Dentro do esperado">
+                        <label class="star-label" for="qu3"><span class="emoji">😐</span><span class="star-desc">Esperado</span></label>
+
+                        <input type="radio" class="star-option" id="qu4" name="qualidade" value="4- Acima">
+                        <label class="star-label" for="qu4"><span class="emoji">😊</span><span class="star-desc">Acima</span></label>
+
+                        <input type="radio" class="star-option" id="qu5" name="qualidade" value="5- Muito acima">
+                        <label class="star-label" for="qu5"><span class="emoji">🤩</span><span class="star-desc">Muito acima</span></label>
+                    </div>
+                </div>
+
+                <!-- 3. Satisfação geral -->
+                <div class="question" data-q="satisfacao">
+                    <div class="question-label">
+                        <div class="question-num">3</div>
+                        <div class="question-text">Satisfação geral</div>
+                    </div>
+                    <div class="stars-row">
+                        <input type="radio" class="star-option" id="sa1" name="satisfacao" value="1- Nada satisfeito">
+                        <label class="star-label" for="sa1"><span class="emoji">😡</span><span class="star-desc">Nada satisfeito</span></label>
+
+                        <input type="radio" class="star-option" id="sa2" name="satisfacao" value="2- Pouco satisfeito">
+                        <label class="star-label" for="sa2"><span class="emoji">😕</span><span class="star-desc">Pouco satisfeito</span></label>
+
+                        <input type="radio" class="star-option" id="sa3" name="satisfacao" value="3- Indiferente">
+                        <label class="star-label" for="sa3"><span class="emoji">😐</span><span class="star-desc">Indiferente</span></label>
+
+                        <input type="radio" class="star-option" id="sa4" name="satisfacao" value="4- Satisfeito">
+                        <label class="star-label" for="sa4"><span class="emoji">😊</span><span class="star-desc">Satisfeito</span></label>
+
+                        <input type="radio" class="star-option" id="sa5" name="satisfacao" value="5- Muito satisfeito">
+                        <label class="star-label" for="sa5"><span class="emoji">🤩</span><span class="star-desc">Muito satisfeito</span></label>
+                    </div>
+                </div>
+
+                <!-- ── BLOCO 2: Entrega & Localização ── -->
+                <div class="section-title">Entrega &amp; Localização</div>
+
+                <!-- 4. Rapidez -->
+                <div class="question" data-q="rapidez">
+                    <div class="question-label">
+                        <div class="question-num">4</div>
+                        <div class="question-text">Rapidez no atendimento ou entrega</div>
+                    </div>
+                    <div class="stars-row">
+                        <input type="radio" class="star-option" id="ra1" name="rapidez" value="1- Muito demorado">
+                        <label class="star-label" for="ra1"><span class="emoji">🐢</span><span class="star-desc">Muito demorado</span></label>
+
+                        <input type="radio" class="star-option" id="ra2" name="rapidez" value="2- Demorado">
+                        <label class="star-label" for="ra2"><span class="emoji">😕</span><span class="star-desc">Demorado</span></label>
+
+                        <input type="radio" class="star-option" id="ra3" name="rapidez" value="3- Razoável">
+                        <label class="star-label" for="ra3"><span class="emoji">😐</span><span class="star-desc">Razoável</span></label>
+
+                        <input type="radio" class="star-option" id="ra4" name="rapidez" value="4- Rápido">
+                        <label class="star-label" for="ra4"><span class="emoji">😊</span><span class="star-desc">Rápido</span></label>
+
+                        <input type="radio" class="star-option" id="ra5" name="rapidez" value="5- Muito rápido">
+                        <label class="star-label" for="ra5"><span class="emoji">🚀</span><span class="star-desc">Muito rápido</span></label>
+                    </div>
+                </div>
+
+                <!-- 5. Localização -->
+                <div class="question" data-q="localizacao">
+                    <div class="question-label">
+                        <div class="question-num">5</div>
+                        <div class="question-text">Localização do negócio</div>
+                    </div>
+                    <div class="stars-row">
+                        <input type="radio" class="star-option" id="lo1" name="localizacao" value="1- Nada conveniente">
+                        <label class="star-label" for="lo1"><span class="emoji">😡</span><span class="star-desc">Nada conveniente</span></label>
+
+                        <input type="radio" class="star-option" id="lo2" name="localizacao" value="2- Pouco conveniente">
+                        <label class="star-label" for="lo2"><span class="emoji">😕</span><span class="star-desc">Pouco conveniente</span></label>
+
+                        <input type="radio" class="star-option" id="lo3" name="localizacao" value="3- Razoável">
+                        <label class="star-label" for="lo3"><span class="emoji">😐</span><span class="star-desc">Razoável</span></label>
+
+                        <input type="radio" class="star-option" id="lo4" name="localizacao" value="4- Conveniente">
+                        <label class="star-label" for="lo4"><span class="emoji">😊</span><span class="star-desc">Conveniente</span></label>
+
+                        <input type="radio" class="star-option" id="lo5" name="localizacao" value="5- Muito conveniente">
+                        <label class="star-label" for="lo5"><span class="emoji">📍</span><span class="star-desc">Muito conveniente</span></label>
+                    </div>
+                </div>
+
+                <!-- ── BLOCO 3: Plataforma ── -->
+                <div class="section-title">Experiência na Plataforma</div>
+
+                <!-- 6. Experiência plataforma -->
+                <div class="question" data-q="experiencia">
+                    <div class="question-label">
+                        <div class="question-num">6</div>
+                        <div class="question-text">Experiência na plataforma</div>
+                    </div>
+                    <div class="stars-row">
+                        <input type="radio" class="star-option" id="ex1" name="experiencia" value="1- Péssimo">
+                        <label class="star-label" for="ex1"><span class="emoji">😡</span><span class="star-desc">Péssimo</span></label>
+
+                        <input type="radio" class="star-option" id="ex2" name="experiencia" value="2- Ruim">
+                        <label class="star-label" for="ex2"><span class="emoji">😕</span><span class="star-desc">Ruim</span></label>
+
+                        <input type="radio" class="star-option" id="ex3" name="experiencia" value="3- Regular">
+                        <label class="star-label" for="ex3"><span class="emoji">😐</span><span class="star-desc">Regular</span></label>
+
+                        <input type="radio" class="star-option" id="ex4" name="experiencia" value="4- Bom">
+                        <label class="star-label" for="ex4"><span class="emoji">😊</span><span class="star-desc">Bom</span></label>
+
+                        <input type="radio" class="star-option" id="ex5" name="experiencia" value="5- Excelente">
+                        <label class="star-label" for="ex5"><span class="emoji">🤩</span><span class="star-desc">Excelente</span></label>
+                    </div>
+                </div>
+
+                <!-- 7. Facilidade de uso -->
+                <div class="question" data-q="facilidade">
+                    <div class="question-label">
+                        <div class="question-num">7</div>
+                        <div class="question-text">Facilidade de uso da plataforma</div>
+                    </div>
+                    <div class="stars-row">
+                        <input type="radio" class="star-option" id="fa1" name="facilidade" value="1- Muito difícil">
+                        <label class="star-label" for="fa1"><span class="emoji">😡</span><span class="star-desc">Muito difícil</span></label>
+
+                        <input type="radio" class="star-option" id="fa2" name="facilidade" value="2- Difícil">
+                        <label class="star-label" for="fa2"><span class="emoji">😕</span><span class="star-desc">Difícil</span></label>
+
+                        <input type="radio" class="star-option" id="fa3" name="facilidade" value="3- Razoável">
+                        <label class="star-label" for="fa3"><span class="emoji">😐</span><span class="star-desc">Razoável</span></label>
+
+                        <input type="radio" class="star-option" id="fa4" name="facilidade" value="4- Fácil">
+                        <label class="star-label" for="fa4"><span class="emoji">😊</span><span class="star-desc">Fácil</span></label>
+
+                        <input type="radio" class="star-option" id="fa5" name="facilidade" value="5- Muito fácil">
+                        <label class="star-label" for="fa5"><span class="emoji">🤩</span><span class="star-desc">Muito fácil</span></label>
+                    </div>
+                </div>
+
+                <!-- ── BLOCO 4: Produto & Recomendação ── -->
+                <div class="section-title">Produto &amp; Recomendação</div>
+
+                <!-- 8. Variedade -->
+                <div class="question" data-q="variedade">
+                    <div class="question-label">
+                        <div class="question-num">8</div>
+                        <div class="question-text">Variedade e disponibilidade</div>
+                    </div>
+                    <div class="stars-row">
+                        <input type="radio" class="star-option" id="va1" name="variedade" value="1- Muito insatisfatória">
+                        <label class="star-label" for="va1"><span class="emoji">😡</span><span class="star-desc">Muito insatisfatória</span></label>
+
+                        <input type="radio" class="star-option" id="va2" name="variedade" value="2- Insatisfatória">
+                        <label class="star-label" for="va2"><span class="emoji">😕</span><span class="star-desc">Insatisfatória</span></label>
+
+                        <input type="radio" class="star-option" id="va3" name="variedade" value="3- Razoável">
+                        <label class="star-label" for="va3"><span class="emoji">😐</span><span class="star-desc">Razoável</span></label>
+
+                        <input type="radio" class="star-option" id="va4" name="variedade" value="4- Satisfatória">
+                        <label class="star-label" for="va4"><span class="emoji">😊</span><span class="star-desc">Satisfatória</span></label>
+
+                        <input type="radio" class="star-option" id="va5" name="variedade" value="5- Excelente">
+                        <label class="star-label" for="va5"><span class="emoji">🤩</span><span class="star-desc">Excelente</span></label>
+                    </div>
+                </div>
+
+                <!-- 9. Ambiente -->
+                <div class="question" data-q="ambiente">
+                    <div class="question-label">
+                        <div class="question-num">9</div>
+                        <div class="question-text">Ambiente e estrutura do estabelecimento</div>
+                    </div>
+                    <div class="stars-row">
+                        <input type="radio" class="star-option" id="am1" name="ambiente" value="1- Péssimo">
+                        <label class="star-label" for="am1"><span class="emoji">😡</span><span class="star-desc">Péssimo</span></label>
+
+                        <input type="radio" class="star-option" id="am2" name="ambiente" value="2- Ruim">
+                        <label class="star-label" for="am2"><span class="emoji">😕</span><span class="star-desc">Ruim</span></label>
+
+                        <input type="radio" class="star-option" id="am3" name="ambiente" value="3- Regular">
+                        <label class="star-label" for="am3"><span class="emoji">😐</span><span class="star-desc">Regular</span></label>
+
+                        <input type="radio" class="star-option" id="am4" name="ambiente" value="4- Bom">
+                        <label class="star-label" for="am4"><span class="emoji">😊</span><span class="star-desc">Bom</span></label>
+
+                        <input type="radio" class="star-option" id="am5" name="ambiente" value="5- Excelente">
+                        <label class="star-label" for="am5"><span class="emoji">🤩</span><span class="star-desc">Excelente</span></label>
+                    </div>
+                </div>
+
+                <!-- 10. Recomendação -->
+                <div class="question" data-q="recomendacao">
+                    <div class="question-label">
+                        <div class="question-num">10</div>
+                        <div class="question-text">Você recomendaria nosso serviço?</div>
+                    </div>
+                    <div class="stars-row">
+                        <input type="radio" class="star-option" id="re1" name="recomendacao" value="1- Com certeza não">
+                        <label class="star-label" for="re1"><span class="emoji">🙅</span><span class="star-desc">Com certeza não</span></label>
+
+                        <input type="radio" class="star-option" id="re2" name="recomendacao" value="2- Provavelmente não">
+                        <label class="star-label" for="re2"><span class="emoji">😕</span><span class="star-desc">Provavelmente não</span></label>
+
+                        <input type="radio" class="star-option" id="re3" name="recomendacao" value="3- Talvez">
+                        <label class="star-label" for="re3"><span class="emoji">🤔</span><span class="star-desc">Talvez</span></label>
+
+                        <input type="radio" class="star-option" id="re4" name="recomendacao" value="4- Provavelmente sim">
+                        <label class="star-label" for="re4"><span class="emoji">😊</span><span class="star-desc">Provavelmente sim</span></label>
+
+                        <input type="radio" class="star-option" id="re5" name="recomendacao" value="5- Com certeza sim">
+                        <label class="star-label" for="re5"><span class="emoji">🙌</span><span class="star-desc">Com certeza sim</span></label>
+                    </div>
+                </div>
+
+                <!-- ── Comentários ── -->
+                <div class="section-title">Comentários</div>
+
+                <div class="question">
+                    <div class="question-label">
+                        <div class="question-num" style="background:#f0fdf4;color:#22c55e;">✎</div>
+                        <div class="question-text">Comentários adicionais <span style="font-weight:500;color:var(--muted);">(opcional)</span></div>
+                    </div>
+                    <div class="textarea-wrap">
+                        <span class="icon">💬</span>
+                        <textarea id="comentarios" name="comentarios"
+                                placeholder="Compartilhe sugestões, críticas ou elogios..."
+                                maxlength="500"></textarea>
+                    </div>
+                    <div class="char-count" id="charCount">0 / 500</div>
+                </div>
+
+                <!-- Botões -->
+                <button type="submit" class="btn-submit" id="btnEnviar">
+                    ⭐ Enviar Avaliação
+                </button>
+
+                <div class="divider"><span>ou</span></div>
+
+                <button type="button" class="btn-back" onclick="window.location.href='/'">
+                    ← Voltar à página inicial
+                </button>
+
+            </form>
+        </div>
+    </div>
+
+</main>
+
+<footer>
+    &copy; 2025 Date Analytics — Todos os direitos reservados
+</footer>
+
+<script>
+    /* ── Barra de progresso (10 questões obrigatórias) ── */
+    const TOTAL_QUESTIONS = 10;
+    const allRadios = document.querySelectorAll('.star-option');
+    const progressFill = document.getElementById('progressFill');
+    const progressPct  = document.getElementById('progressPct');
+
+    function updateProgress() {
+        const names = new Set();
+        allRadios.forEach(r => { if (r.checked) names.add(r.name); });
+        // Remover 'comentarios' (não é radio)
+        names.delete('comentarios');
+        const pct = Math.round((names.size / TOTAL_QUESTIONS) * 100);
+        progressFill.style.width = pct + '%';
+        progressPct.textContent  = pct + '%';
+    }
+
+    allRadios.forEach(r => r.addEventListener('change', updateProgress));
+
+    /* ── Contador de caracteres ── */
+    const textarea  = document.getElementById('comentarios');
+    const charCount = document.getElementById('charCount');
+    const MAX_CHARS = 500;
+
+    textarea.addEventListener('input', function() {
+        const len = this.value.length;
+        charCount.textContent = `${len} / ${MAX_CHARS}`;
+        charCount.className   = 'char-count';
+        if (len >= MAX_CHARS * .85) charCount.classList.add('near');
+        if (len >= MAX_CHARS)       charCount.classList.add('limit');
+    });
+
+    /* ── Validação submit ── */
+    document.getElementById('surveyForm').addEventListener('submit', function(e) {
+        const required = ['atendimento','qualidade','satisfacao','rapidez','localizacao',
+                        'experiencia','facilidade','variedade','ambiente','recomendacao'];
+
+        const missing = required.filter(name =>
+            !document.querySelector(`input[name="${name}"]:checked`)
+        );
+
+        if (missing.length > 0) {
+            e.preventDefault();
+            // Scroll até a primeira questão sem resposta
+            const first = document.querySelector(`[data-q="${missing[0]}"]`);
+            if (first) {
+                first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                first.style.borderRadius = '10px';
+                first.style.boxShadow = '0 0 0 2px rgba(232,93,4,.5)';
+                setTimeout(() => first.style.boxShadow = '', 2000);
+            }
+            alert(`⚠️ Por favor, responda todas as ${missing.length} questão(ões) ainda em aberto.`);
+        }
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login — Pedido Certo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --primary:       #e85d04;
+            --primary-dark:  #c84e00;
+            --primary-light: #fff1ea;
+            --dark:          #1a1a2e;
+            --dark-2:        #16213e;
+            --surface:       #ffffff;
+            --text:          #1a1a2e;
+            --muted:         #6b7280;
+            --border:        #e5e7eb;
+        }
+
+        html, body {
+            height: 100%;
+            font-family: 'Nunito', sans-serif;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background: var(--dark);
+            overflow: hidden;
+        }
+
+        /* ── Fundo com malha animada ── */
+        .bg {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            background: var(--dark);
+            overflow: hidden;
+        }
+
+        /* Grade pontilhada */
+        .bg::before {
+            content: '';
+            position: absolute; inset: 0;
+            background-image:
+                radial-gradient(circle, rgba(255,255,255,.07) 1px, transparent 1px);
+            background-size: 36px 36px;
+        }
+
+        /* Borrões de cor */
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(90px);
+            opacity: .45;
+            animation: drift 14s ease-in-out infinite alternate;
+        }
+
+        .blob-1 {
+            width: 520px; height: 520px;
+            background: radial-gradient(circle, #e85d04 0%, transparent 70%);
+            top: -140px; left: -120px;
+            animation-delay: 0s;
+        }
+
+        .blob-2 {
+            width: 400px; height: 400px;
+            background: radial-gradient(circle, #ff8c42 0%, transparent 70%);
+            bottom: -100px; right: -80px;
+            animation-delay: -7s;
+        }
+
+        .blob-3 {
+            width: 280px; height: 280px;
+            background: radial-gradient(circle, #c84e00 0%, transparent 70%);
+            top: 55%; left: 60%;
+            animation-delay: -4s;
+        }
+
+        @keyframes drift {
+            from { transform: translate(0, 0) scale(1); }
+            to   { transform: translate(30px, 20px) scale(1.08); }
+        }
+
+        /* ── Layout principal ── */
+        main {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ── Wrapper dois painéis ── */
+        .login-wrapper {
+            display: flex;
+            width: 100%;
+            max-width: 900px;
+            min-height: 520px;
+            border-radius: 22px;
+            overflow: hidden;
+            box-shadow: 0 32px 80px rgba(0,0,0,.55),
+                        0 0 0 1px rgba(255,255,255,.06);
+            animation: cardIn .55s cubic-bezier(.22,.68,0,1.2) both;
+        }
+
+        @keyframes cardIn {
+            from { opacity: 0; transform: translateY(28px) scale(.97); }
+            to   { opacity: 1; transform: translateY(0)    scale(1); }
+        }
+
+        /* ── Painel esquerdo (brand) ── */
+        .panel-brand {
+            width: 42%;
+            background: var(--primary);
+            background-image:
+                radial-gradient(circle at 30% 30%, rgba(255,255,255,.12), transparent 60%),
+                radial-gradient(circle at 80% 80%, rgba(0,0,0,.18), transparent 60%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 48px 36px;
+            position: relative;
+            overflow: hidden;
+            gap: 24px;
+        }
+
+        /* Padrão geométrico sutil no painel */
+        .panel-brand::before {
+            content: '';
+            position: absolute; inset: 0;
+            background-image:
+                repeating-linear-gradient(
+                    45deg,
+                    rgba(255,255,255,.04) 0px, rgba(255,255,255,.04) 1px,
+                    transparent 1px, transparent 28px
+                );
+        }
+
+        .brand-logo {
+            width: 150px;
+            position: relative;
+            filter: brightness(0) invert(1);
+            opacity: .95;
+            animation: fadeUp .6s .2s both ease;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(14px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .brand-tagline {
+            position: relative;
+            text-align: center;
+            animation: fadeUp .6s .35s both ease;
+        }
+
+        .brand-tagline h2 {
+            font-size: 22px;
+            font-weight: 900;
+            color: #fff;
+            line-height: 1.2;
+            margin-bottom: 8px;
+        }
+
+        .brand-tagline p {
+            font-size: 13px;
+            color: rgba(255,255,255,.78);
+            line-height: 1.5;
+            font-weight: 500;
+        }
+
+        .brand-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            position: relative;
+            animation: fadeUp .6s .5s both ease;
+        }
+
+        .pill {
+            background: rgba(255,255,255,.15);
+            border: 1px solid rgba(255,255,255,.22);
+            color: #fff;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 5px 12px;
+            border-radius: 20px;
+            backdrop-filter: blur(4px);
+        }
+
+        /* ── Painel direito (formulário) ── */
+        .panel-form {
+            flex: 1;
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 52px 44px;
+        }
+
+        .form-header { margin-bottom: 32px; }
+
+        .form-header .label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .12em;
+            color: var(--primary);
+            margin-bottom: 6px;
+        }
+
+        .form-header h1 {
+            font-size: 28px;
+            font-weight: 900;
+            color: var(--text);
+            line-height: 1.15;
+        }
+
+        .form-header p {
+            font-size: 13px;
+            color: var(--muted);
+            margin-top: 6px;
+            font-weight: 500;
+        }
+
+        /* Inputs */
+        .field { margin-bottom: 18px; }
+
+        .field label {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+
+        .input-wrap {
+            position: relative;
+        }
+
+        .input-wrap .icon {
+            position: absolute;
+            left: 13px; top: 50%; transform: translateY(-50%);
+            font-size: 16px; pointer-events: none;
+            transition: opacity .2s;
+        }
+
+        .input-wrap input {
+            width: 100%;
+            padding: 11px 13px 11px 40px;
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+            background: #f9fafb;
+            outline: none;
+            transition: border-color .22s, box-shadow .22s, background .22s;
+        }
+
+        .input-wrap input::placeholder { color: #b5bec9; font-weight: 500; }
+
+        .input-wrap input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(232,93,4,.12);
+            background: #fff;
+        }
+
+        /* Olho de senha */
+        .eye-toggle {
+            position: absolute;
+            right: 12px; top: 50%; transform: translateY(-50%);
+            background: none; border: none; cursor: pointer;
+            font-size: 17px; color: var(--muted);
+            padding: 0; line-height: 1;
+            transition: color .2s;
+        }
+
+        .eye-toggle:hover { color: var(--primary); }
+
+        .input-wrap input[type="password"] { padding-right: 40px; }
+
+        /* Botão entrar */
+        .btn-login {
+            width: 100%;
+            padding: 13px;
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 15px;
+            font-weight: 800;
+            cursor: pointer;
+            margin-top: 6px;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            transition: background .22s, transform .12s, box-shadow .22s;
+            box-shadow: 0 4px 14px rgba(232,93,4,.38);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-login::after {
+            content: '';
+            position: absolute; inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,.12) 0%, transparent 60%);
+            pointer-events: none;
+        }
+
+        .btn-login:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 8px 22px rgba(232,93,4,.48);
+        }
+
+        .btn-login:active { transform: translateY(0); }
+
+        /* Divider */
+        .divider {
+            display: flex; align-items: center; gap: 12px;
+            margin: 16px 0;
+        }
+
+        .divider::before, .divider::after {
+            content: ''; flex: 1; height: 1px; background: var(--border);
+        }
+
+        .divider span { font-size: 11px; color: var(--muted); font-weight: 700; }
+
+        /* Botão sair */
+        .btn-exit {
+            width: 100%;
+            padding: 11px;
+            background: transparent;
+            color: var(--muted);
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: border-color .22s, color .22s, background .22s;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+
+        .btn-exit:hover {
+            border-color: #ef4444;
+            color: #ef4444;
+            background: #fef2f2;
+        }
+
+        /* Footer */
+        footer {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            padding: 16px;
+            font-size: 12px;
+            font-weight: 600;
+            color: rgba(255,255,255,.25);
+        }
+
+        /* Flash messages */
+        .flash {
+            background: #fef2f2;
+            border: 1.5px solid #fca5a5;
+            color: #dc2626;
+            border-radius: 9px;
+            padding: 10px 14px;
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 18px;
+            display: flex; align-items: center; gap: 8px;
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 700px) {
+            .login-wrapper { flex-direction: column; max-width: 420px; min-height: unset; border-radius: 18px; }
+            .panel-brand { width: 100%; padding: 32px 28px; flex-direction: row; flex-wrap: wrap; gap: 16px; min-height: 160px; }
+            .brand-logo { width: 110px; }
+            .brand-tagline h2 { font-size: 17px; }
+            .brand-tagline p  { display: none; }
+            .panel-form { padding: 32px 28px; }
+            .form-header h1 { font-size: 22px; }
+        }
+
+        @media (max-width: 420px) {
+            main { padding: 16px; }
+            .panel-form { padding: 24px 20px; }
+            .panel-brand { padding: 24px 20px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Fundo animado -->
+<div class="bg">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+</div>
+
+<main>
+    <div class="login-wrapper">
+
+        <!-- Painel esquerdo — branding -->
+        <div class="panel-brand">
+            <img
+                src="https://raw.githubusercontent.com/Williamsrvs/img_catalogodigital/refs/heads/main/logo%20pedido%20certo.png"
+                alt="Pedido Certo"
+                class="brand-logo">
+
+            <div class="brand-tagline">
+                <h2>Seu sistema de pedidos simplificado</h2>
+                <p>Gerencie clientes, produtos e entregas em um só lugar.</p>
+            </div>
+
+            <div class="brand-pills">
+                <span class="pill">🛒 PDV</span>
+                <span class="pill">📦 Pedidos</span>
+                <span class="pill">🛵 Entregas</span>
+                <span class="pill">📊 Relatórios</span>
+            </div>
+        </div>
+
+        <!-- Painel direito — formulário -->
+        <div class="panel-form">
+
+            <div class="form-header">
+                <div class="label">Bem-vindo de volta</div>
+                <h1>Acesse sua conta</h1>
+                <p>Digite suas credenciais para continuar</p>
+            </div>
+
+            <!-- Bloco para mensagens de erro do Flask (Jinja2) -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                <div class="flash">⚠️ {{ message }}</div>
+                {% endfor %}
+            {% endif %}
+            {% endwith %}
+
+            <form method="POST" action="/login" id="loginForm">
+
+                <div class="field">
+                    <label for="nome_usuario">Usuário</label>
+                    <div class="input-wrap">
+                        <span class="icon">👤</span>
+                        <input
+                            type="text"
+                            id="nome_usuario"
+                            name="nome_usuario"
+                            placeholder="Digite seu usuário"
+                            autocomplete="username"
+                            required>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label for="senha_usuario">Senha</label>
+                    <div class="input-wrap">
+                        <span class="icon">🔒</span>
+                        <input
+                            type="password"
+                            id="senha_usuario"
+                            name="senha_usuario"
+                            placeholder="Digite sua senha"
+                            autocomplete="current-password"
+                            required>
+                        <button
+                            type="button"
+                            class="eye-toggle"
+                            id="eyeToggle"
+                            aria-label="Mostrar senha">👁️</button>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-login">
+                    🔑 Entrar no Sistema
+                </button>
+
+                <div class="divider"><span>ou</span></div>
+
+                <button
+                    type="button"
+                    class="btn-exit"
+                    onclick="window.location.href='/'">
+                    🚪 Cancelar
+                </button>
+
+            </form>
+        </div>
+
+    </div>
+</main>
+
+<footer>
+    &copy; 2025 Date Analytics — Todos os direitos reservados
+</footer>
+
+<script>
+    /* ── Toggle senha visível ── */
+    const eyeBtn   = document.getElementById('eyeToggle');
+    const passInput = document.getElementById('senha_usuario');
+
+    eyeBtn.addEventListener('click', function() {
+        const isPassword = passInput.type === 'password';
+        passInput.type   = isPassword ? 'text' : 'password';
+        eyeBtn.textContent = isPassword ? '🙈' : '👁️';
+    });
+
+    /* ── Shake no erro de validação ── */
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+        const usuario = document.getElementById('nome_usuario').value.trim();
+        const senha   = document.getElementById('senha_usuario').value.trim();
+
+        if (!usuario || !senha) {
+            e.preventDefault();
+            const card = document.querySelector('.panel-form');
+            card.style.animation = 'shake .4s ease';
+            setTimeout(() => card.style.animation = '', 500);
+        }
+    });
+
+    /* ── Animação shake ── */
+    const shakeStyle = document.createElement('style');
+    shakeStyle.textContent = `
+        @keyframes shake {
+            0%,100% { transform: translateX(0); }
+            20%      { transform: translateX(-6px); }
+            40%      { transform: translateX(6px); }
+            60%      { transform: translateX(-4px); }
+            80%      { transform: translateX(4px); }
+        }
+    `;
+    document.head.appendChild(shakeStyle);
+</script>
+
+</body>
+</html>
