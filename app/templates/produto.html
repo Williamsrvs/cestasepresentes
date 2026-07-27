@@ -236,11 +236,7 @@
             font-size: 15px; font-weight: 600;
         }
 
-        /* ── DRAWER DO FORMULÁRIO ──────────────────────────────────
-           Substitui o form-card flutuante que sumia entre 768-1024px.
-           Funciona como painel lateral que desliza pela direita em
-           QUALQUER tamanho de tela, nunca fica escondido pelo sidebar.
-        ── */
+    
         .drawer-backdrop {
             display: none;
             position: fixed; inset: 0;
@@ -446,10 +442,7 @@
 <button class="menu-toggle" id="menuToggle" aria-label="Abrir menu">☰</button>
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-<!-- ════════════════════════════════════════════════════════
-     DRAWER DO FORMULÁRIO — desliza pela direita
-     Visível em TODOS os tamanhos de tela, nunca some
-════════════════════════════════════════════════════════ -->
+
 <div class="drawer-backdrop" id="drawerBackdrop"></div>
 
 <div class="form-drawer" id="formDrawer" role="dialog" aria-modal="true" aria-labelledby="drawerTitle">
@@ -536,26 +529,99 @@
 
     <div class="sidebar-nav">
 
-        <span class="nav-section-label">Produtos</span>
+        <span class="nav-section-label">Cadastros</span>
 
-        <!-- Este botão agora SEMPRE abre o drawer, independente do tamanho da tela -->
-        <button id="toggleFormBtn" class="nav-btn primary">
+        <a href="/produto" class="nav-btn active">
             <span class="icon">➕</span>
-            Adicionar Produto
-        </button>
+            Cadastro de Produto
+        </a>
 
-        <button class="nav-btn" onclick="window.location.href='/produto_excel'">
-            <span class="icon">⬇️</span>
-            Lista de Produtos
-        </button>
+        <a href="cliente" class="nav-btn">
+            <span class="icon">📃</span>
+            Cadastro de Cliente
+        </a>
+
+        <a href="entregadores" class="nav-btn">
+            <span class="icon">🛵</span>
+            Cadastro de Entregador
+        </a>
+
+        <a href="/cadastrar_usuario" class="nav-btn">
+            <span class="icon">🔑</span>
+            Cadastrar Usuários
+        </a>
+
+        <a href="/plano_contas" class="nav-btn">
+            <span class="icon">📑</span>
+            Plano Contas
+        </a>
+
+        <a href="#" class="nav-btn">
+            <span class="icon">💰</span>
+            Registro Financeiro
+        </a>
 
         <div class="nav-divider"></div>
+
+        <span class="nav-section-label">Gerenciamento</span>
+
+        <a href="/ger_clientes" class="nav-btn">
+            <span class="icon">🔝</span>
+            Clientes
+        </a>
+
+        <a href="/ger_pedidos" class="nav-btn">
+            <span class="icon">📦</span>
+            Pedidos
+        </a>
+
+        <a href="/cad_financeiro" class="nav-btn">
+            <span class="icon">💰</span>
+            Registro Financeiro
+        </a>
+
+        <a href="/pedidos" class="nav-btn">
+            <span class="icon">🛒</span>
+            Fazer Pedidos (PDV)
+        </a>
+
+        <a href="/dashboard" class="nav-btn">
+            <span class="icon">📊</span>
+            Dashboard de Vendas
+        </a>
+
+        <div class="nav-divider"></div>
+
+        <span class="nav-section-label">Relatórios</span>
+
+        <a href="/produto_excel" class="nav-btn">
+            <span class="icon">📊</span>
+            Relatório Produtos
+        </a>
+
+        <a href="/cliente_excel" class="nav-btn">
+            <span class="icon">📊</span>
+            Relatório Clientes
+        </a>
+
+        <a href="/ger_pedidos" class="nav-btn">
+            <span class="icon">📊</span>
+            Relatório Pedidos
+        </a>
+
+        <a href="/pedidos_excel_clientes" class="nav-btn">
+            <span class="icon">📊</span>
+            Pedidos por Cliente
+        </a>
+
+        <div class="nav-divider"></div>
+
         <span class="nav-section-label">Conta</span>
 
-        <button class="nav-btn danger" onclick="window.location.href='/lojista'">
+        <a href="/" class="nav-btn danger">
             <span class="icon">🚪</span>
             Sair
-        </button>
+        </a>
 
     </div>
 
@@ -564,7 +630,6 @@
     </div>
 
 </nav>
-
 <!-- ── Main ── -->
 <main class="main">
 
@@ -711,16 +776,13 @@
         sidebar.classList.contains('active') ? closeSidebar() : openSidebar());
     overlay.addEventListener('click', closeSidebar);
 
-    /* ── Drawer do formulário ──────────────────────────────────────
-    Solução definitiva: painel que desliza pela DIREITA.
-    Nunca fica sobreposto pela sidebar (que fica à esquerda).
-    Funciona em qualquer largura de tela.
-    ── */
+
     const drawer   = document.getElementById('formDrawer');
     const backdrop = document.getElementById('drawerBackdrop');
     const btnClose = document.getElementById('drawerClose');
     const btnSide  = document.getElementById('toggleFormBtn');
     const btnHead  = document.getElementById('headerAddBtn');
+
 
     function openDrawer() {
         drawer.classList.add('open');

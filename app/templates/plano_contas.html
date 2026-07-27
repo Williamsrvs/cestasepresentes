@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cadastro de Cliente — Pedido Certo</title>
+    <title>Plano de Contas</title>
     <meta name="robots" content="noindex,nofollow">
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -159,7 +159,6 @@
             overflow: hidden;
         }
 
-        /* Card head com acento */
         .form-card-header {
             padding: 28px 32px 22px;
             border-bottom: 1px solid var(--color-border);
@@ -189,10 +188,8 @@
             margin-top: 2px;
         }
 
-        /* Card body */
         .form-card-body { padding: 28px 32px 32px; }
 
-        /* Section dividers inside form */
         .form-section-label {
             font-size: 10px;
             font-weight: 700;
@@ -215,7 +212,6 @@
             background: var(--color-border);
         }
 
-        /* Form elements */
         .form-group { margin-bottom: 14px; }
         .form-group:last-of-type { margin-bottom: 0; }
 
@@ -226,7 +222,8 @@
             color: var(--color-muted); margin-bottom: 5px;
         }
 
-        .form-group input {
+        .form-group input,
+        .form-group select {
             width: 100%; padding: 10px 13px;
             border: 1.5px solid var(--color-border); border-radius: 8px;
             font-family: inherit; font-size: 14px; color: var(--color-text);
@@ -234,7 +231,8 @@
             transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
         }
 
-        .form-group input:focus {
+        .form-group input:focus,
+        .form-group select:focus {
             border-color: var(--color-primary);
             box-shadow: 0 0 0 3px rgba(232,93,4,.12);
             background: #fff;
@@ -243,9 +241,7 @@
         .form-group input::placeholder { color: #b0b8c4; }
 
         .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-        .form-grid-3 { display: grid; grid-template-columns: 2fr 1fr 80px; gap: 14px; }
 
-        /* Input with icon */
         .input-wrap { position: relative; }
 
         .input-wrap .input-icon {
@@ -256,7 +252,6 @@
 
         .input-wrap input { padding-left: 36px; }
 
-        /* Submit */
         .btn-submit {
             width: 100%; padding: 13px;
             background: var(--color-primary); color: #fff;
@@ -276,7 +271,6 @@
 
         .btn-submit:active { transform: translateY(0); }
 
-        /* Cancel link */
         .btn-cancel-link {
             display: block; text-align: center;
             margin-top: 14px;
@@ -287,7 +281,6 @@
 
         .btn-cancel-link:hover { color: var(--color-primary); }
 
-        /* ── Responsive ── */
         @media (max-width: 768px) {
             .sidebar { transform: translateX(-100%); }
             .sidebar.active { transform: translateX(0); }
@@ -299,8 +292,6 @@
             .form-card-header { padding: 22px 20px 18px; }
             .form-card-body { padding: 20px 20px 24px; }
             .form-grid-2 { grid-template-columns: 1fr; }
-            .form-grid-3 { grid-template-columns: 1fr 1fr; }
-            .form-grid-3 > :last-child { grid-column: 1; }
         }
     </style>
 </head>
@@ -311,58 +302,28 @@
 
 <!-- ── Sidebar ── -->
 <nav class="sidebar" id="sidebar">
-
     <div class="sidebar-brand">
         <img src="https://raw.githubusercontent.com/Williamsrvs/img_catalogodigital/refs/heads/main/logo%20pedido%20certo.png" alt="Pedido Certo">
-        <span class="sidebar-badge">Painel do Lojista</span>
+        <span class="sidebar-badge">Plano de Contas</span>
     </div>
 
     <div class="sidebar-nav">
-
         <span class="nav-section-label">Cadastros</span>
 
+        <a href="/cliente" class="nav-btn">
+            <span class="icon">📃</span> Cadastro de Cliente
+        </a>
         <a href="/produto" class="nav-btn">
-            <span class="icon">➕</span>
-            Cadastro de Produto
+            <span class="icon">➕</span> Cadastro de Produto
         </a>
-
-        <a href="cliente" class="nav-btn active">
-            <span class="icon">📃</span>
-            Cadastro de Cliente
-        </a>
-
         <a href="entregadores" class="nav-btn">
-            <span class="icon">🛵</span>
-            Cadastro de Entregador
+            <span class="icon">🛵</span> Cadastro de Entregador
         </a>
-
         <a href="/cadastrar_usuario" class="nav-btn">
-            <span class="icon">🔑</span>
-            Cadastrar Usuários
+            <span class="icon">🔑</span> Cadastrar Usuários
         </a>
-
-        <a href="/plano_contas" class="nav-btn">
-            <span class="icon">📑</span>
-            Plano Contas
-        </a>
-
-        <a href="#" class="nav-btn">
-            <span class="icon">💰</span>
-            Registro Financeiro
-        </a>
-
-        <div class="nav-divider"></div>
-
-        <span class="nav-section-label">Gerenciamento</span>
-
-        <a href="/ger_clientes" class="nav-btn">
-            <span class="icon">🔝</span>
-            Clientes
-        </a>
-
-        <a href="/ger_pedidos" class="nav-btn">
-            <span class="icon">📦</span>
-            Pedidos
+        <a href="/plano_contas" class="nav-btn active">
+            <span class="icon">📊</span> Plano de Contas
         </a>
 
         <a href="/cad_financeiro" class="nav-btn">
@@ -370,9 +331,20 @@
             Registro Financeiro
         </a>
 
+        <div class="nav-divider"></div>
+        <span class="nav-section-label">Gerenciamento</span>
+
+        <a href="/ger_clientes" class="nav-btn">
+            <span class="icon">🔝</span> Gerenciar Clientes
+        </a>
+        <a href="/ger_pedidos" class="nav-btn">
+            <span class="icon">📦</span> Gerenciar Pedidos
+        </a>
+
+        
+
         <a href="/pedidos" class="nav-btn">
-            <span class="icon">🛒</span>
-            Fazer Pedidos (PDV)
+            <span class="icon">🛒</span> Fazer Pedidos (PDV)
         </a>
 
         <a href="/dashboard" class="nav-btn">
@@ -381,50 +353,24 @@
         </a>
 
         <div class="nav-divider"></div>
-
-        <span class="nav-section-label">Relatórios</span>
-
-        <a href="/produto_excel" class="nav-btn">
-            <span class="icon">📊</span>
-            Relatório Produtos
-        </a>
-
-        <a href="/cliente_excel" class="nav-btn">
-            <span class="icon">📊</span>
-            Relatório Clientes
-        </a>
-
-        <a href="/ger_pedidos" class="nav-btn">
-            <span class="icon">📊</span>
-            Relatório Pedidos
-        </a>
-
-        <a href="/pedidos_excel_clientes" class="nav-btn">
-            <span class="icon">📊</span>
-            Pedidos por Cliente
-        </a>
-
-        <div class="nav-divider"></div>
-
         <span class="nav-section-label">Conta</span>
 
-        <a href="/" class="nav-btn danger">
-            <span class="icon">🚪</span>
-            Sair
+    
+        <a href="/lojista" class="nav-btn danger">
+            <span class="icon">🚪</span> Sair
         </a>
-
     </div>
 
     <div class="sidebar-footer">
         <p>&copy; 2025 Date Analytics<br>Todos os direitos reservados</p>
     </div>
-
 </nav>
+
 <!-- ── Main ── -->
 <main class="main">
 
     <div class="topbar">
-        <h1>👤 Cadastro de <span>Cliente</span></h1>
+        <h1>📊 Plano de <span>Contas</span></h1>
         <a href="/lojista" class="topbar-back">🏠 Voltar ao Início</a>
     </div>
 
@@ -432,82 +378,52 @@
         <div class="form-card">
 
             <div class="form-card-header">
-                <div class="form-card-icon">👤</div>
+                <div class="form-card-icon">📊</div>
                 <div class="form-card-header-text">
-                    <h2>Novo Cliente</h2>
-                    <p>Preencha os dados para cadastrar um novo cliente no sistema</p>
+                    <h2>Nova Conta</h2>
+                    <p>Preencha os dados para cadastrar uma nova conta no plano de contas</p>
                 </div>
             </div>
 
             <div class="form-card-body">
-                <form action="/cliente" method="POST" id="clienteForm">
+                <form action="/plano_contas" method="POST" id="planoContasForm">
 
                     <!-- Identificação -->
                     <div class="form-section-label">Identificação</div>
 
-                    <div class="form-group">
-                        <label for="nome_cliente">Nome Completo</label>
-                        <div class="input-wrap">
-                            <span class="input-icon">👤</span>
-                            <input type="text" id="nome_cliente" name="nome_cliente" placeholder="Digite o nome completo" required>
-                        </div>
-                    </div>
-
                     <div class="form-grid-2">
                         <div class="form-group">
-                            <label for="telefone">Telefone / WhatsApp</label>
+                            <label for="dt_registro">Data Registro</label>
                             <div class="input-wrap">
-                                <span class="input-icon">📱</span>
-                                <input type="tel" id="telefone" name="telefone" placeholder="(00) 00000-0000" maxlength="15" required>
+                                <span class="input-icon">🗓️</span>
+                                <input type="date" id="dt_registro" name="dt_registro" required>
                             </div>
                         </div>
+
                         <div class="form-group">
-                            <label for="email">E-mail</label>
-                            <div class="input-wrap">
-                                <span class="input-icon">✉️</span>
-                                <input type="email" id="email" name="email" placeholder="exemplo@email.com" required>
-                            </div>
+                            <label for="tipo">Tipo</label>
+                            <select id="tipo" name="tipo" required>
+                                <option value="" disabled selected>Selecione</option>
+                                <option value="RECEITA">RECEITA</option>
+                                <option value="DESPESA">DESPESA</option>
+                            </select>
                         </div>
                     </div>
 
-                    <!-- Endereço -->
-                    <div class="form-section-label">Endereço</div>
+                    <!-- Classificação -->
+                    <div class="form-section-label">Classificação</div>
 
                     <div class="form-group">
-                        <label for="endereco">Logradouro</label>
+                        <label for="tipo_conta">Descrição da Conta</label>
                         <div class="input-wrap">
-                            <span class="input-icon">🏠</span>
-                            <input type="text" id="endereco" name="endereco" placeholder="Rua, Avenida... e número" required>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="bairro">Bairro</label>
-                        <div class="input-wrap">
-                            <span class="input-icon">📍</span>
-                            <input type="text" id="bairro" name="bairro" placeholder="Nome do bairro" required>
-                        </div>
-                    </div>
-
-                    <div class="form-grid-3">
-                        <div class="form-group">
-                            <label for="cidade">Cidade</label>
-                            <input type="text" id="cidade" name="cidade" placeholder="Cidade" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="uf">Estado</label>
-                            <input type="text" id="uf" name="uf" placeholder="UF" maxlength="2" required
-                                style="text-transform:uppercase;">
-                        </div>
-                        <div class="form-group">
-                            <label for="cep">CEP</label>
-                            <input type="text" id="cep" name="cep" placeholder="00000-000" maxlength="9">
+                            <span class="input-icon">✉️</span>
+                            <input type="text" id="tipo_conta" name="tipo_conta" placeholder="Ex: Conta de água" required>
                         </div>
                     </div>
 
                     <!-- Submit -->
                     <button type="submit" class="btn-submit">
-                        ✅ Cadastrar Cliente
+                        ✅ Cadastrar Conta
                     </button>
 
                     <a href="/lojista" class="btn-cancel-link">← Cancelar e voltar</a>
@@ -530,26 +446,6 @@
     overlay.addEventListener('click', closeSidebar);
     function openSidebar()  { sidebar.classList.add('active');    overlay.classList.add('active'); }
     function closeSidebar() { sidebar.classList.remove('active'); overlay.classList.remove('active'); }
-
-    /* ── Máscara telefone ── */
-    document.getElementById('telefone').addEventListener('input', function(e) {
-        let v = e.target.value.replace(/\D/g, '');
-        if (v.length <= 10) v = v.replace(/^(\d{2})(\d{4})(\d{0,4}).*/, '($1) $2-$3');
-        else                v = v.replace(/^(\d{2})(\d{5})(\d{0,4}).*/, '($1) $2-$3');
-        e.target.value = v;
-    });
-
-    /* ── Máscara CEP ── */
-    document.getElementById('cep').addEventListener('input', function(e) {
-        let v = e.target.value.replace(/\D/g, '');
-        v = v.replace(/^(\d{5})(\d{0,3}).*/, '$1-$2');
-        e.target.value = v;
-    });
-
-    /* ── UF uppercase ── */
-    document.getElementById('uf').addEventListener('input', function(e) {
-        e.target.value = e.target.value.toUpperCase();
-    });
 
     /* ── Fechar com ESC ── */
     document.addEventListener('keydown', function(e) {
