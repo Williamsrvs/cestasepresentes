@@ -474,6 +474,8 @@
                     <select id="d_subgrupo" name="subgrupo" required>
                         <option value="">Selecione um subgrupo</option>
                         <option value="Cestas e Presentes">Cestas Personalizadas</option>
+                        <option value="Cesta Diet / Light">Cesta Diet / Light</option>
+                        <option value="Cesta Fitness">Cesta Fitness</option>
                         <option value="Mimos Personalizados">Mimos Personalizados</option>
                         <option value="Buquê com Rosa de Cetim">Buquê com Rosa de Cetim</option>
                         <option value="Buquê de borboletas">Buquê de borboletas</option>
@@ -618,7 +620,7 @@
 
         <span class="nav-section-label">Conta</span>
 
-        <a href="/" class="nav-btn danger">
+        <a href="/lojista" class="nav-btn danger">
             <span class="icon">🚪</span>
             Sair
         </a>
@@ -717,6 +719,8 @@
                         <option value="">Selecione um subgrupo</option>
                         <option value="Cestas Personalizadas"   {% if p.subgrupo == 'Cestas Personalizadas' %}selected{% endif %}>Cestas Personalizadas</option>
                         <option value="Mimos Personalizados" {% if p.subgrupo == 'Mimos Personalizados' %}selected{% endif %}>Mimos Personalizados</option>
+                        <option value="Cesta Diet / Light" {% if p.subgrupo == 'Cesta Diet / Light' %}selected{% endif %}>Cesta Diet / Light</option>
+                        <option value="Cesta Fitness" {% if p.subgrupo == 'Cesta Fitness' %}selected{% endif %}>Cesta Fitness</option>
                         <option value="Buquê com Rosa de Cetim" {% if p.subgrupo == 'Buquê com Rosa de Cetim' %}selected{% endif %}>Buquê com Rosa de Cetim</option>
                         <option value="Buquê de borboletas" {% if p.subgrupo == 'Buquê de borboletas' %}selected{% endif %}>Buquê de borboletas</option>                        
                         <option value="Pelucias" {% if p.subgrupo == 'Pelucias' %}selected{% endif %}>Pelucias</option>
