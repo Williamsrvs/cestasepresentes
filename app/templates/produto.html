@@ -30,12 +30,15 @@
             --transition:          .22s ease;
         }
 
+        html { overflow-x: hidden; }
+
         body {
             font-family: 'Nunito', sans-serif;
             background: var(--color-bg);
             color: var(--color-text);
             min-height: 100vh;
             display: flex;
+            overflow-x: hidden;
         }
 
         /* ── Sidebar ── */
@@ -124,37 +127,94 @@
             background: rgba(0,0,0,.45); z-index: 99; backdrop-filter: blur(2px);
         }
 
+        /* ── Sidebar collapse/expand (botão único) ── */
+        .sidebar-collapse-btn {
+            position: absolute; top: 14px; right: 14px;
+            width: 26px; height: 26px; border-radius: 50%;
+            border: none;
+            background: rgba(255,255,255,.08); color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; font-size: 12px; line-height: 1;
+            z-index: 101;
+            transition: background var(--transition), transform var(--transition), right var(--transition);
+        }
+
+        .sidebar-collapse-btn:hover { background: var(--color-primary); }
+
+        .sidebar-collapse-btn .arrow {
+            display: inline-block; transition: transform var(--transition);
+        }
+
+        .sidebar.collapsed { width: 76px; }
+
+        .sidebar.collapsed .sidebar-collapse-btn {
+            top: 6px; right: 6px; width: 20px; height: 20px; font-size: 9px;
+        }
+
+        .sidebar.collapsed .sidebar-collapse-btn .arrow { transform: rotate(180deg); }
+
+        .sidebar.collapsed .sidebar-brand img { width: 36px; }
+
+        .sidebar.collapsed .sidebar-badge,
+        .sidebar.collapsed .nav-section-label,
+        .sidebar.collapsed .sidebar-footer p { display: none; }
+
+        .sidebar.collapsed .sidebar-nav .nav-btn {
+            font-size: 0; justify-content: center; padding: 11px 0; gap: 0;
+        }
+
+        .sidebar.collapsed .sidebar-nav .nav-btn .icon { font-size: 16px; }
+
+        .sidebar.collapsed + .main { margin-left: 76px; }
+
+        @media (max-width: 768px) {
+            .sidebar-collapse-btn { display: none; }
+        }
+
         /* ── Main ── */
         .main {
             margin-left: var(--sidebar-w);
             flex: 1;
             padding: 32px 28px;
             min-height: 100vh;
+            transition: margin-left var(--transition);
         }
 
         .page-header {
             display: flex; align-items: center; justify-content: space-between;
             margin-bottom: 28px; flex-wrap: wrap; gap: 12px;
+            background: var(--color-surface);
+            padding: 18px 24px;
+            border-radius: 14px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--color-border);
         }
 
-        .page-header h1 { font-size: 22px; font-weight: 800; color: var(--color-text); }
+        .page-header h1 {
+            font-size: 26px; font-weight: 800; color: var(--color-text);
+            letter-spacing: -.01em;
+        }
         .page-header h1 span { color: var(--color-primary); }
+        .page-header p {
+            text-align: center; font-size: 13px; color: var(--color-muted);
+        }
 
         /* Botão "Adicionar" no header da página (visível em todas as telas) */
         .btn-add-header {
-            display: flex; align-items: center; gap: 7px;
-            padding: 9px 18px;
+            display: flex; align-items: center; gap: 8px;
+            padding: 12px 22px;
             background: var(--color-primary); color: #fff;
-            border: none; border-radius: 9px;
-            font-family: inherit; font-size: 13.5px; font-weight: 700;
+            border: none; border-radius: 10px;
+            font-family: inherit; font-size: 14.5px; font-weight: 800;
+            letter-spacing: .01em;
             cursor: pointer;
-            box-shadow: 0 2px 8px rgba(232,93,4,.35);
+            box-shadow: 0 4px 14px rgba(232,93,4,.4);
             transition: background var(--transition), transform .12s, box-shadow var(--transition);
         }
 
         .btn-add-header:hover {
-            background: var(--color-primary-dark); transform: translateY(-1px);
-            box-shadow: 0 4px 14px rgba(232,93,4,.45);
+            background: var(--color-primary-dark); transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(232,93,4,.5);
         }
 
         /* ── Product grid — ESTRUTURA ORIGINAL MANTIDA ── */
@@ -529,6 +589,10 @@
         <span class="sidebar-badge">Painel do Lojista</span>
     </div>
 
+    <button class="sidebar-collapse-btn" id="sidebarCollapseBtn" type="button" aria-label="Encolher/expandir menu" title="Encolher/expandir menu">
+        <span class="arrow">❮</span>
+    </button>
+
     <div class="sidebar-nav">
 
         <span class="nav-section-label">Cadastros</span>
@@ -779,6 +843,28 @@
     menuToggle.addEventListener('click', () =>
         sidebar.classList.contains('active') ? closeSidebar() : openSidebar());
     overlay.addEventListener('click', closeSidebar);
+
+    /* ── Sidebar encolher/expandir (botão único) ── */
+    const collapseBtn = document.getElementById('sidebarCollapseBtn');
+
+    // Adiciona tooltip com o texto de cada item, útil quando o menu está encolhido
+    document.querySelectorAll('.sidebar-nav .nav-btn').forEach(btn => {
+        const label = btn.textContent.trim();
+        if (label) btn.setAttribute('title', label);
+    });
+
+    function setSidebarCollapsed(collapsed) {
+        sidebar.classList.toggle('collapsed', collapsed);
+        localStorage.setItem('sidebarCollapsed', collapsed ? '1' : '0');
+    }
+
+    collapseBtn.addEventListener('click', () =>
+        setSidebarCollapsed(!sidebar.classList.contains('collapsed')));
+
+    // Restaura o último estado escolhido pelo usuário
+    if (localStorage.getItem('sidebarCollapsed') === '1') {
+        setSidebarCollapsed(true);
+    }
 
 
     const drawer   = document.getElementById('formDrawer');
