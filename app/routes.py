@@ -116,7 +116,7 @@ def index():
     conn = mysql.get_connection(); cur = conn.cursor(dictionary=True)
     try:
         # Buscar apenas produtos ativos (ativo = 1)   
-        cur.execute("SELECT * FROM tbl_prod WHERE ativo = 1 ORDER BY created_at DESC")
+        cur.execute("SELECT * FROM tbl_prod WHERE ativo = 1 ORDER BY valor DESC")
         produtos = cur.fetchall()
         
         # Buscar subgrupos únicos apenas de produtos ativos
