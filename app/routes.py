@@ -295,7 +295,7 @@ def produto(id_prod=None):
         
         # GET: Listar produtos (apenas ativos)
         if request.method == 'GET':
-            cur.execute("SELECT * FROM tbl_prod WHERE ativo = 1 ORDER BY created_at DESC")
+            cur.execute("SELECT * FROM tbl_prod WHERE ativo = 1 ORDER BY valor DESC")
             produtos = cur.fetchall()
             return render_template('produto.html', produtos=produtos)
             
